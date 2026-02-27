@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Inicio - Anódica";
+}
+
+<div class="text-center py-5">
+    <h1 class="display-3 fw-bold text-primary">Sistema de Gestión Anódica</h1>
+    <p class="lead text-white-50">Optimización y control de procesos industriales en tiempo real.</p>
+    <hr class="my-4">
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-1 p-3">
+                <h3>Inventario</h3>
+                <p>Control total de insumos y stock mínimo.</p>
+                <a asp-controller="Insumos" asp-action="Index" class="btn botonIndexCardON">Ver Stock</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card rounded-3 shadow-sm border-1 p-3">
+                <h3>Producción</h3>
+                <p>Seguimiento de órdenes de trabajo.</p>
+                <button class="btn botonIndexCardOFF " disabled>Próximamente</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-1 p-3">
+                <h3>Reportes</h3>
+                <p>Análisis de movimientos y eficiencia.</p>
+                <button class="btn botonIndexCardOFF" disabled>Próximamente</button>
+            </div>
+        </div>
+    </div>
+</div>

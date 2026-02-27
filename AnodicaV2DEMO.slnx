@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Anodica.AccesoDatos/Anodica.AccesoDatos.csproj" />
+  <Project Path="Anodica.Modelos/Anodica.Modelos.csproj" />
+  <Project Path="AnodicaV2DEMO/AnodicaV2DEMO.csproj" />
+</Solution>
