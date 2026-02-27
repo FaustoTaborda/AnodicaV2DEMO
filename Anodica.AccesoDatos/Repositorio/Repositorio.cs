@@ -15,7 +15,7 @@ namespace Anodica.AccesoDatos.Repositorio
             this.dbSet = _db.Set<T>();
         }
 
-        public async Task<T> ObtenerAsync(int id)
+        public async Task<T> ObtenerAsync(object id)
         {
             return await dbSet.FindAsync(id);
         }

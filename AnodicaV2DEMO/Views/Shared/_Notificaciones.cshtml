@@ -1,0 +1,28 @@
+﻿@if (TempData["success"] != null)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Operación Exitosa!',
+                text: '@TempData["success"]',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        });
+    </script>
+}
+
+@if (TempData["error"] != null)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Atención',
+                text: '@TempData["error"]',
+                confirmButtonColor: '#d33'
+            });
+        });
+    </script>
+}

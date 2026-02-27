@@ -16,11 +16,16 @@ namespace Anodica.Controllers
             _unidadTrabajo = unidadTrabajo;
             _logger = logger;
         }
-
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var lista = await _unidadTrabajo.Insumo.ObtenerTodosAsync();
             return View(lista);
+        }
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
         }
 
         [HttpPost]
