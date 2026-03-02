@@ -2,8 +2,15 @@ using Anodica.AccesoDatos;
 using Anodica.AccesoDatos.Repositorio;
 using Anodica.AccesoDatos.Repositorio.IRepositorio;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// SERILOG - Para registrar errores en archivo de log interno
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.WriteTo.Console()
+                 .WriteTo.File("Logs/log-errores-.txt", rollingInterval: RollingInterval.Day) //RollingInterval para crear un nuevo archivo cada día y que no se junte todo en uno solo
+);
 
 // 1. Configuración de Controladores y Vistas
 builder.Services.AddControllersWithViews();
