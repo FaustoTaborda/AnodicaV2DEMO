@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Anodica.AccesoDatos.Repositorio
 {
-    public class Repositorio<T> : IRepositorio<T> where T : class
+    public class Repositorio<T,I> : IRepositorio<T,I> where T : class
     {
         private readonly ApplicationDbContext _db;
         internal DbSet<T> dbSet;
@@ -15,11 +15,12 @@ namespace Anodica.AccesoDatos.Repositorio
             this.dbSet = _db.Set<T>();
         }
 
-        public async Task<T> ObtenerAsync(object id)
+        public async Task<T> ObtenerAsync(I id)
         {
             return await dbSet.FindAsync(id);
         }
-        public async Task<IEnumerable<T>> ObtenerTodosAsync(Expression<Func<T, bool>> filtro = null, string incluirPropiedades = null)
+        public async Task<IEnumerable<T>> ObtenerTodosAsync(Expression<Func<T, bool>> filtro = null, string incluirPropiedades = null,
+        bool isTracking = true)
         {
             IQueryable<T> query = dbSet;
             // CUESTION-1: Investigamos sobre el uso de query.AsNoTracking() acá para que listados como el Index no consuman memoria extra en el servidor. 
@@ -37,7 +38,10 @@ namespace Anodica.AccesoDatos.Repositorio
                     query = query.Include(inclProp);
                 }
             }
-
+            if (!isTracking)
+            {
+                query = query.AsNoTracking();
+            }
             return await query.ToListAsync();
         }
         public void Agregar(T entidad)

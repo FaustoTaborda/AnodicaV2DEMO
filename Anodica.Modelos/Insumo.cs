@@ -20,11 +20,11 @@ namespace Anodica.Modelos
         [Required(ErrorMessage = "La unidad es obligatoria")]
         [Column(TypeName = "varchar(5)")]
         public string UnidadMedida { get; set; }
-
+        [Range(0, 100000, ErrorMessage = "El stock no puede ser un número negativo.")] 
         [Required(ErrorMessage = "El stock es obligatorio")]
         [Column(TypeName = "decimal(10, 2)")]
         public decimal CantidadStock { get; set; } // Cambiamos de int a decimal
-
+        [Range(0, 100000, ErrorMessage = "El stock mínimo no puede ser un número negativo.")]
         [Required(ErrorMessage = "El stock mínimo es obligatorio")]
         [Column(TypeName = "decimal(10, 2)")]
         public decimal CantMinimaStock { get; set; } // Cambiamos de int a decimal

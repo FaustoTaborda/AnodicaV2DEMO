@@ -39,12 +39,12 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <label asp-for="CantidadStock" class="form-label">Stock Actual</label>
-                        <input asp-for="CantidadStock" class="form-control" type="number" step="0.01" />
+                        <input asp-for="CantidadStock" class="form-control" min="0" type="number" step="0.01" />
                         <span asp-validation-for="CantidadStock" class="text-danger"></span>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label asp-for="CantMinimaStock" class="form-label">Stock Mínimo</label>
-                        <input asp-for="CantMinimaStock" class="form-control" type="number" step="0.01" />
+                        <input asp-for="CantMinimaStock" class="form-control" min="0" type="number" step="0.01" />
                         <span asp-validation-for="CantMinimaStock" class="text-danger"></span>
                     </div>
                 </div>

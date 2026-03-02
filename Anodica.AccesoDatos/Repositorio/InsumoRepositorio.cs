@@ -3,7 +3,7 @@ using Anodica.Modelos;
 
 namespace Anodica.AccesoDatos.Repositorio
 {
-    public class InsumoRepositorio : Repositorio<Insumo>, IInsumoRepositorio
+    public class InsumoRepositorio : Repositorio<Insumo,short>, IInsumoRepositorio
     {
         private readonly ApplicationDbContext _db;
 
