@@ -7,10 +7,10 @@ namespace Anodica.Modelos
     public class Insumo
     {
         [Key]
-        public short InsumoID { get; set; } // smallint en SQL equivale a 'short' en C#
+        public short InsumoID { get; set; } 
 
         [Required(ErrorMessage = "El código es obligatorio")]
-        [Column(TypeName = "varchar(50)")] // Forzamos a que use varchar, no nvarchar
+        [Column(TypeName = "varchar(50)")] 
         public string CodigoInsumo { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -23,10 +23,12 @@ namespace Anodica.Modelos
         [Range(0, 100000, ErrorMessage = "El stock no puede ser un número negativo.")] 
         [Required(ErrorMessage = "El stock es obligatorio")]
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal CantidadStock { get; set; } // Cambiamos de int a decimal
+        public decimal CantidadStock { get; set; } 
         [Range(0, 100000, ErrorMessage = "El stock mínimo no puede ser un número negativo.")]
         [Required(ErrorMessage = "El stock mínimo es obligatorio")]
         [Column(TypeName = "decimal(10, 2)")]
-        public decimal CantMinimaStock { get; set; } // Cambiamos de int a decimal
+        public decimal CantMinimaStock { get; set; } 
+
+        public ICollection<InsumoMovimiento> InsumoMovimientos { get; set; }
     }
 }

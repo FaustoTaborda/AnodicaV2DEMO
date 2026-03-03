@@ -1,4 +1,5 @@
 ﻿using Anodica.AccesoDatos.Repositorio.IRepositorio;
+using Anodica.Modelos;
 
 namespace Anodica.AccesoDatos.Repositorio
 {
@@ -6,11 +7,13 @@ namespace Anodica.AccesoDatos.Repositorio
     {
         private readonly ApplicationDbContext _db;
         public IInsumoRepositorio Insumo { get; private set; }
+        public IInsumoMovimientoRepositorio InsumoMovimiento { get; private set; }
 
         public UnidadTrabajo(ApplicationDbContext db)
         {
             _db = db;
             Insumo = new InsumoRepositorio(_db);
+            InsumoMovimiento = new InsumoMovimientoRepositorio(_db);
         }
 
         public async Task GuardarAsync()

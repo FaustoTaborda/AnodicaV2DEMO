@@ -12,7 +12,7 @@ html {
     box-shadow: 0 0 0 1px rgba(33, 37, 41, 0.25); 
     outline: none; 
 }
-}
+
 
 /* Aseguramos que el lienzo ocupe todo el alto siempre */
 html, body {

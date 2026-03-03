@@ -8,5 +8,7 @@ namespace Anodica.AccesoDatos
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<Insumo> Insumos { get; set; } 
+
+        public DbSet<InsumoMovimiento> InsumoMovimientos { get; set; }
     }
 }
