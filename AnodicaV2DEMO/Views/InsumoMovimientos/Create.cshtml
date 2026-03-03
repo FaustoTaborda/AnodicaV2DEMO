@@ -1,0 +1,68 @@
+﻿@model AnodicaV2DEMO.ViewModels.InsumoMovimientoVM
+
+@{
+    ViewData["Title"] = "Registrar Movimiento";
+}
+
+<div class="container mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">
+                <i class="bi bi-arrow-left-right"></i> Registrar Movimiento de Stock
+            </h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3 fw-bold"></div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="InsumoMovimiento.InsumoRef" class="form-label fw-bold">Insumo</label>
+                        <select asp-for="InsumoMovimiento.InsumoRef" asp-items="@Model.ListaInsumos" class="form-select">
+                            <option disabled selected>-- Seleccione el Insumo --</option>
+                        </select>
+                        <span asp-validation-for="InsumoMovimiento.InsumoRef" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="InsumoMovimiento.EsIngreso" class="form-label fw-bold">Tipo de Operación</label>
+                        <select asp-for="InsumoMovimiento.EsIngreso" class="form-select">
+                            <option value="true" class="text-success fw-bold"> INGRESO (Entrada de mercadería)</option>
+                            <option value="false" class="text-danger fw-bold"> EGRESO (Salida / Retiro)</option>
+                        </select>
+                        <span asp-validation-for="InsumoMovimiento.EsIngreso" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+    
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="InsumoMovimiento.Cantidad" class="form-label fw-bold">Cantidad</label>
+                        <input asp-for="InsumoMovimiento.Cantidad" class="form-control" type="number" min="1" step="1" placeholder="Ingrese cantidad..." />
+                        <span asp-validation-for="InsumoMovimiento.Cantidad" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="InsumoMovimiento.FechaMovimiento" class="form-label fw-bold">Fecha de la Operación</label>
+                        <input asp-for="InsumoMovimiento.FechaMovimiento" class="form-control" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="InsumoMovimiento.FechaMovimiento" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 border-top pt-3 text-end">
+                    <a asp-action="Index" class="btn btn-secondary me-2">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success shadow-sm">
+                        <i class="bi bi-save"></i> Guardar Movimiento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
