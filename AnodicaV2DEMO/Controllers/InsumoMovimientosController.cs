@@ -52,7 +52,7 @@ namespace Anodica.Controllers
             }
 
             try
-            {  
+            {
                 var insumoDb = await _unidadTrabajo.Insumo.ObtenerAsync(movimientoVM.InsumoMovimiento.InsumoRef);
 
                 if (insumoDb == null)
@@ -92,6 +92,32 @@ namespace Anodica.Controllers
                 movimientoVM.ListaInsumos = await ObtenerListaInsumosParaDropdown();
                 return View(movimientoVM);
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerStockInsumo(short id)
+        {
+            var insumo = await _unidadTrabajo.Insumo.ObtenerAsync(id);
+            if (insumo == null)
+            {
+                return Json(new { success = false });
+            }
+            //Para que la vista muestre el nombre completo de la unidad de medida en lugar de abreviada
+            string nombreUnidad = insumo.UnidadMedida switch
+            {
+                "Un" => "Unidades",
+                "Kg" => "Kilogramos",
+                "Lt" => "Litros",
+                _ => insumo.UnidadMedida 
+            };
+
+            return Json(new
+            {
+                success = true,
+                stockActual = insumo.CantidadStock,
+                stockMinimo = insumo.CantMinimaStock,
+                unidad = nombreUnidad
+            });
         }
 
         // Metodo Auxiliar para cargar el dropdown de Insumos en la vista Create y Edit

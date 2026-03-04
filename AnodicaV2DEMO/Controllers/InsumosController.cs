@@ -39,6 +39,13 @@ namespace Anodica.Controllers
 
             try
             {
+                var validaInsumoExistente = await _unidadTrabajo.Insumo.ObtenerTodosAsync(i => i.CodigoInsumo == insumo.CodigoInsumo);
+
+                if (validaInsumoExistente.Any())
+                {
+                    ModelState.AddModelError("CodigoInsumo", $"El código '{insumo.CodigoInsumo}' ya está en uso por otro insumo.");
+                    return View(insumo);
+                }
                 _unidadTrabajo.Insumo.Agregar(insumo);
                 await _unidadTrabajo.GuardarAsync();
 

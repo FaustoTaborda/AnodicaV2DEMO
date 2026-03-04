@@ -17,15 +17,21 @@
 
                 <div class="row">
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-2">
                         <label asp-for="InsumoMovimiento.InsumoRef" class="form-label fw-bold">Insumo</label>
-                        <select asp-for="InsumoMovimiento.InsumoRef" asp-items="@Model.ListaInsumos" class="form-select">
-                            <option disabled selected>-- Seleccione el Insumo --</option>
+                        <select asp-for="InsumoMovimiento.InsumoRef" asp-items="@Model.ListaInsumos" class="form-select" id="selectInsumo">
+                            <option disabled selected value="">-- Seleccione el Insumo --</option>
                         </select>
                         <span asp-validation-for="InsumoMovimiento.InsumoRef" class="text-danger"></span>
+
+                        <div id="infoStock" class="alert alert-info mt-2 p-2 d-none">
+                            <i class="bi bi-info-circle-fill"></i>
+                            Stock Actual: <span id="lblStockActual" class="fw-bold text-dark"></span> <br />
+                            Mínimo: <span id="lblStockMinimo" class="text-danger fw-bold"></span>
+                        </div>
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-32">
                         <label asp-for="InsumoMovimiento.EsIngreso" class="form-label fw-bold">Tipo de Operación</label>
                         <select asp-for="InsumoMovimiento.EsIngreso" class="form-select">
                             <option value="true" class="text-success fw-bold"> INGRESO (Entrada de mercadería)</option>
@@ -34,7 +40,7 @@
                         <span asp-validation-for="InsumoMovimiento.EsIngreso" class="text-danger"></span>
                     </div>
                 </div>
-
+                
                 <div class="row">
     
                     <div class="col-md-6 mb-3">
@@ -65,4 +71,29 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.getElementById('selectInsumo').addEventListener('change', function () {
+
+            var insumoId = this.value;
+            var cajaInfo = document.getElementById('infoStock');
+
+            // Si por algún motivo vuelve a seleccionar la opción vacía, ocultamos la caja
+            if (!insumoId) {
+                cajaInfo.classList.add('d-none');
+                return;
+            }
+
+            fetch('/InsumoMovimientos/ObtenerStockInsumo/' + insumoId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('lblStockActual').textContent = data.stockActual + ' ' + (data.unidad || '');
+                        document.getElementById('lblStockMinimo').textContent = data.stockMinimo + ' ' + (data.unidad || '');
+                        cajaInfo.classList.remove('d-none');
+                    }
+                })
+                .catch(error => console.error('Error al obtener el stock:', error));
+        });
+    </script>
 }
