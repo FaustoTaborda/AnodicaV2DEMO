@@ -1,0 +1,51 @@
+﻿@model Anodica.Modelos.ViewModels.LineaVM
+
+@{
+    ViewData["Title"] = "Crear Línea";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Nueva Línea</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Linea.LineaNombre" class="form-label">Nombre de la Línea</label>
+                        <input asp-for="Linea.LineaNombre" class="form-control" placeholder="Ej: Línea Herrero" />
+                        <span asp-validation-for="Linea.LineaNombre" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Linea.ProveedorRef" class="form-label">Proveedor Asociado</label>
+                        <select asp-for="Linea.ProveedorRef" asp-items="@Model.ProveedoresList" class="form-select">
+                            <option disabled selected>-- Seleccione un Proveedor --</option>
+                        </select>
+                        <span asp-validation-for="Linea.ProveedorRef" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Linea.LineaGrupoRef" class="form-label">Grupo (Opcional)</label>
+                        <input asp-for="Linea.LineaGrupoRef" class="form-control" type="number" />
+                        <span asp-validation-for="Linea.LineaGrupoRef" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 border-top pt-3 text-end">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-success shadow-sm">Guardar Línea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

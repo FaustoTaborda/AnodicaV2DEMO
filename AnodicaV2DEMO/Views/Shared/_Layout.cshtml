@@ -3,18 +3,23 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - AnodicaV2DEMO</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Anodica</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AnodicaV2DEMO.styles.css" asp-append-version="true" />
 </head>
-<body class="">
+
+<body class="d-flex flex-column min-vh-100">
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-dark navbar-custom border-bottom box-shadow">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/logo-river.svg" alt="Anódica Logo" style="width:40px ;" />
+
+                <a class="navbar-brand d-flex align-items-center gap-2"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <img src="~/images/logo-river.svg" alt="Anódica Logo" style="width:40px;" />
                     Anódica
                 </a>
 
@@ -25,18 +30,19 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                 Gestión de Stock
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="Insumos" asp-action="Index">Lista de Insumos</a></li>
                                 <li><a class="dropdown-item" asp-controller="Insumos" asp-action="Create">Nuevo Insumo</a></li>
+                                <li><a class="dropdown-item" asp-controller="Lineas" asp-action="Index">Lineas</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" asp-controller="InsumoMovimientos" asp-action="Index">Movimientos</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" id="dropProduccion" role="button" data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                 Producción
                             </a>
                             <ul class="dropdown-menu">
@@ -49,23 +55,30 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class=" footer ">
-        <div class="container">
-            &copy; 2026 - AnodicaV2DEMO - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main class="main-wrapper flex-grow-1">
+        <div class="glass-panel d-flex flex-column">
+
+            <div class="container-glass flex-grow-1">
+                @RenderBody()
+            </div>
+
+            <footer class="footer-glass mt-auto">
+                <div class="text-center text-white">
+                    &copy; 2026 - Sistema Anódica -
+                    <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                </div>
+            </footer>
+
         </div>
-    </footer>
+    </main>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <partial name="_Notificaciones" />
     @await RenderSectionAsync("Scripts", required: false)
-   
 </body>
 </html>

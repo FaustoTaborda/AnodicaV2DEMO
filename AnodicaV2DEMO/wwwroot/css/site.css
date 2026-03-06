@@ -1,108 +1,175 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+@media (min-width:768px) {
+    html {
+        font-size: 16px;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 1px rgba(33, 37, 41, 0.25); 
-    outline: none; 
-}
-
-
-/* Aseguramos que el lienzo ocupe todo el alto siempre */
 html, body {
     min-height: 100vh;
-    height: 100%;
 }
 
 body {
     background-image: url('../images/bg_rid_1920x1080.png');
     background-repeat: no-repeat;
-    background-attachment: fixed; /* Esto hace que al scrollear la imagen no se mueva */
-    background-size: cover; /* Esto la estira a lo ancho y largo */
-    background-position: center center;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
-/* Hacemos el footer transparente para que se vea la imagen de fondo */
-footer {
-    background-color: transparent !important;
-    color: white !important; /* Letra blanca para que resalte */
+/* NAVBAR */
+.navbar-custom {
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
 }
 
-    footer a {
-        color: white ;
+.navbar {
+    position: relative;
+    z-index: 1000;
+}
+
+
+.main-wrapper {
+    display: flex;
+    justify-content: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.glass-panel {
+    width: 100%;
+    max-width: 1000px; 
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.1); 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* CONTENIDO */
+.container-glass {
+    padding: 2.5rem 3rem;
+}
+
+/* FOOTER */
+.footer-glass {
+    padding: 15px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    text-align: center;
+    background: rgba(0,0,0,0.4); 
+    color: rgba(255,255,255,0.8);
+}
+
+    .footer-glass a {
+        color: rgba(255,255,255,0.8);
         text-decoration: underline;
     }
-/* Para que el contenido principal tenga un poco de contraste */
-/* Ajuste del contenedor central */
-.container {
-    /* Fondo blanco con mucha transparencia (0.6 es bastante transparente) */
 
-    /* Hacemos el div más chico */
-    max-width: 900px;
-    /* Centrado y espaciado */
-    margin: 50px auto;
-    padding: 3rem;
-    /* Bordes y sombras para que no se pierda con el fondo */
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    /* Efecto de desenfoque (Glassmorphism) - Queda muy startup */
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+        .footer-glass a:hover {
+            color: white;
+        }
+
+table {
+    background: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+    table thead th {
+        position: relative;
+        z-index: 2;
+    }
+
+.card-anodica {
+    background: rgb(55, 123, 173);
+ 
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
-}
-/* Efecto hover oscurecido para links de navegación */
-.navbar-nav .nav-link:hover, .dropdown-item:hover {
-    background-color: rgba(0, 0, 0, 0.08); /* Oscurece un poquito */
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-}
-
-/* Efecto para el dropdown cuando está abierto */
-.dropdown-item:active {
-    background-color: #333; /* Color más oscuro al clickear */
-    color: white;
-}
-.card {
-    background: rgb(55 123 173)
-}
-/* Botón estilo "Ghost" para tarjetas azules */
-/* Botón oscuro y sutil, adaptado al texto negro de la tarjeta azul */
 .botonIndexCardON {
-    /* 1. ESTADO NORMAL */
-    --bs-btn-color: #212529; /* Gris casi negro, igual al texto de Bootstrap */
-    --bs-btn-border-color: #212529; /* Borde oscuro y sutil */
-    /* 2. ESTADO HOVER */
-    --bs-btn-hover-color: #ffffff; /* Al pasar el mouse, el texto se vuelve blanco... */
-    --bs-btn-hover-bg: #15181b; /* ...y el fondo se pinta de un negro elegante */
+    /* NORMAL */
+    --bs-btn-color: #212529;
+    --bs-btn-border-color: #212529;
+    /* HOVER */
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: #15181b;
     --bs-btn-hover-border-color: #15181b;
-    /* 3. ESTADO ACTIVE (Clic) */
     --bs-btn-active-color: #ffffff;
-    --bs-btn-active-bg: #000000; /* Negro puro al hacer clic */
+    --bs-btn-active-bg: #000000;
     --bs-btn-active-border-color: #000000;
-    /* APLICACIÓN */
     background-color: transparent;
-    border: 1px solid var(--bs-btn-border-color); /* Volvemos al borde fino de 1px */
-    color: var(--bs-btn-color) ;
-    font-weight: normal; /* Sacamos el grosor extra */
+    border: 1px solid var(--bs-btn-border-color);
+    color: var(--bs-btn-color);
+    font-weight: bold;
     transition: all 0.1s ease;
 }
 
     .botonIndexCardON:hover {
-        color: var(--bs-btn-hover-color) ;
+        color: var(--bs-btn-hover-color);
         background-color: var(--bs-btn-hover-bg);
         border-color: var(--bs-btn-hover-border-color);
     }
+
+.botonIndexCardOFF {
+    border: 1px solid #333 !important;
+    color: #333 !important;
+    font-weight: normal;
+    opacity: 0.9 !important; 
+    cursor: not-allowed;
+}
+
+.navbar-nav .nav-link:hover,
+.dropdown-item:hover {
+    background-color: rgba(0,0,0,0.08);
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:active {
+    background-color: #333;
+    color: white;
+}
+
+.dropdown-menu {
+    z-index: 9999;
+}
+
+/* 
+   RESPONSIVE
+*/
+@media (max-width: 768px) {
+    .main-wrapper {
+        padding: 15px;
+    }
+
+    .glass-panel {
+        border-radius: 14px;
+    }
+
+    .container-glass {
+        padding: 1.5rem;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+
+    .navbar-brand {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container-glass {
+        padding: 1rem;
+    }
+
+    table {
+        font-size: 0.8rem;
+    }
+}

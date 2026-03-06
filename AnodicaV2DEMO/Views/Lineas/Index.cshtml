@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Anodica.Modelos.Linea>
+
+@{
+    ViewData["Title"] = "Listado de Líneas";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-6">
+            <h2 class="text-primary fw-bold">Listado de Líneas</h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-action="Create" class="btn btn-primary shadow-sm">
+                + Crear Nueva Línea
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-3 table-responsive">
+            <table id="tablaLineas" class="table table-hover align-middle mb-0 w-100">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-3">Nombre de Línea</th>
+                        <th>Proveedor Asociado</th>
+                        <th>Grupo</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-3 fw-semibold">@item.LineaNombre</td>
+                            <td>@item.Proveedor?.ProveedorNombre</td>
+                            <td>@item.LineaGrupoRef</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a asp-action="Edit" asp-route-id="@item.LineaID" class="btn btn-warning btn-sm">Editar</a>
+                                    <form asp-action="Delete" asp-route-id="@item.LineaID" method="post" id="form-eliminar-@item.LineaID">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="ConfirmarEliminacion('@item.LineaID', '@item.LineaNombre')">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaLineas').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" 
+                }
+            });
+        });
+    </script>
+}

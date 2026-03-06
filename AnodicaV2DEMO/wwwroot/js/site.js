@@ -1,4 +1,19 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
+﻿function ConfirmarEliminacion(id, nombre) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Vas a borrar: " + nombre,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Sí, borrar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Eliminando...',
+                didOpen: () => { Swal.showLoading(); }
+            });
+            document.getElementById('form-eliminar-' + id).submit();
+        }
+    })
+}

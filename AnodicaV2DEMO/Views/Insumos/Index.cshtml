@@ -16,8 +16,8 @@
         </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
+    <div class="card shadow-sm border-0"> <!--Revisar-->
+        <div class="card-body p-0 table-responsive-lg">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                     <tr>
@@ -59,27 +59,5 @@
 </div>
 
 @section Scripts {
-    <partial name="_Notificaciones" />
 
-    <script>
-        function ConfirmarEliminacion(id, nombre) {
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Vas a borrar: " + nombre,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Sí, borrar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Eliminando...',
-                        didOpen: () => { Swal.showLoading(); }
-                    });
-                    document.getElementById('form-eliminar-' + id).submit();
-                }
-            })
-        }
-    </script>
 }
