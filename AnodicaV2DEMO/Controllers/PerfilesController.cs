@@ -56,7 +56,7 @@ namespace Anodica.Web.Controllers
                 var existeCodigo = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p => p.PerfilCodigoAlcemar == perfilVM.Perfil.PerfilCodigoAlcemar);
                 if (existeCodigo.Any())
                 {
-                    ModelState.AddModelError("Perfil.PerfilCodigoAlcemar", "Ya existe un perfil con este código Alcemar.");
+                    ModelState.AddModelError("Perfil.PerfilCodigoAlcemar", "Ya existe un perfil con este código .");
                     await CargarListasDelViewModel(perfilVM);
                     return View(perfilVM);
                 }
@@ -74,7 +74,29 @@ namespace Anodica.Web.Controllers
                 _unidadTrabajo.Perfil.Agregar(perfilVM.Perfil);
                 await _unidadTrabajo.GuardarAsync();
 
-                TempData["success"] = "Perfil industrial creado exitosamente.";
+                if (perfilVM.Tratamientos != null && perfilVM.Tratamientos.Any(t => t.EstaSeleccionado))
+                {
+                    var tratamientosActivos = perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList();
+
+                    foreach (var item in tratamientosActivos)
+                    {
+                        var nuevoPerfilTratamiento = new PerfilTratamiento
+                        {
+                            PerfilRef = perfilVM.Perfil.PerfilID, 
+                            TratamientoRef = item.TratamientoRef,
+                            UbicacionRef = item.UbicacionRef,
+                            CantMinimaTirasStock = item.CantMinimaTirasStock,
+                            CantidadStock = 0 
+                        };
+
+                        _unidadTrabajo.PerfilTratamiento.Agregar(nuevoPerfilTratamiento);
+                    }
+
+                    // Guardamos todos los tratamientos de golpe
+                    await _unidadTrabajo.GuardarAsync();
+                }
+
+                    TempData["success"] = "Perfil industrial creado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -234,6 +256,20 @@ namespace Anodica.Web.Controllers
                 Text = u.UbicacionCodigo == u.UbicacionDesc ? u.UbicacionCodigo : $"{u.UbicacionCodigo} - {u.UbicacionDesc}",
                 Value = u.UbicacionID.ToString()
             });
+
+            if (vm.Tratamientos == null || !vm.Tratamientos.Any())
+            {
+                var todosLosTratamientos = await _unidadTrabajo.Tratamiento.ObtenerTodosAsync(isTracking: false);
+
+                vm.Tratamientos = todosLosTratamientos.Select(t => new PerfilTratamientoFilaVM
+                {
+                    TratamientoRef = t.TratamientoID,
+                    TratamientoNombre = t.TratamientoNombre,
+                    EstaSeleccionado = false, 
+                    CantMinimaTirasStock = 0,
+                    UbicacionRef = null
+                }).ToList(); 
+            }
 
             if (vm.ProveedorId.HasValue && vm.ProveedorId.Value > 0)
             {

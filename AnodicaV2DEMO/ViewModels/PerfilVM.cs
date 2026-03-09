@@ -11,5 +11,6 @@ namespace AnodicaV2DEMO.ViewModels
         public IEnumerable<SelectListItem> ProveedoresList { get; set; }
         public IEnumerable<SelectListItem> LineasList { get; set; }
         public IEnumerable<SelectListItem> UbicacionesList { get; set; }
+        public List<PerfilTratamientoFilaVM> Tratamientos { get; set; } = new List<PerfilTratamientoFilaVM>();
     }
 }
