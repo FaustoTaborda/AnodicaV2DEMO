@@ -75,6 +75,44 @@
                 </div>
             </div>
 
+            <h5 class="text-primary border-bottom pb-2 mb-3 mt-4"><i class="bi bi-palette"></i> Ubicación y Stock Mínimo por Tratamiento</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 5%; text-align: center;">Aplica</th>
+                            <th style="width: 25%;">Tratamiento</th>
+                            <th style="width: 40%;">Ubicación Física</th>
+                            <th style="width: 30%;">Stock Mínimo (Tiras)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Tratamientos.Count; i++)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input" type="checkbox" asp-for="Tratamientos[i].EstaSeleccionado" style="transform: scale(1.3);" />
+                                    </div>
+                                    <input type="hidden" asp-for="Tratamientos[i].TratamientoRef" />
+                                    <input type="hidden" asp-for="Tratamientos[i].TratamientoNombre" />
+                                </td>
+                                <td class="fw-bold text-secondary">
+                                    @Model.Tratamientos[i].TratamientoNombre
+                                </td>
+                                <td>
+                                    <select asp-for="Tratamientos[i].UbicacionRef" asp-items="@Model.UbicacionesList" class="form-select form-select-sm">
+                                    </select>
+                                </td>
+                                <td>
+                                    <input asp-for="Tratamientos[i].CantMinimaTirasStock" class="form-control form-control-sm" type="number" min="0" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
             <div class="mt-4 border-top pt-3 text-end">
                 <a asp-action="Index" class="btn btn-secondary me-2">Cancelar</a>
                 <button type="submit" class="btn btn-primary px-4">Guardar Perfil</button>

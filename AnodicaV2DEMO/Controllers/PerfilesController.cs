@@ -267,7 +267,7 @@ namespace Anodica.Web.Controllers
                     TratamientoNombre = t.TratamientoNombre,
                     EstaSeleccionado = false, 
                     CantMinimaTirasStock = 0,
-                    UbicacionRef = null
+                    UbicacionRef = 1
                 }).ToList(); 
             }
 
