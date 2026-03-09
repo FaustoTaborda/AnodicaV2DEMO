@@ -1,9 +1,15 @@
 ﻿using Anodica.Modelos;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-public class PerfilVM
+namespace AnodicaV2DEMO.ViewModels
 {
-    public Perfil Perfil { get; set; }
-    public IEnumerable<SelectListItem> LineasList { get; set; }
-    public IEnumerable<SelectListItem> UbicacionesList { get; set; }
+    public class PerfilVM
+    {
+        public Perfil Perfil { get; set; }
+
+        public int? ProveedorId { get; set; }
+        public IEnumerable<SelectListItem> ProveedoresList { get; set; }
+        public IEnumerable<SelectListItem> LineasList { get; set; }
+        public IEnumerable<SelectListItem> UbicacionesList { get; set; }
+    }
 }

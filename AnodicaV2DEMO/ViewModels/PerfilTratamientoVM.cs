@@ -1,10 +1,12 @@
 ﻿using Anodica.Modelos;
 using Microsoft.AspNetCore.Mvc.Rendering;
-
-public class PerfilTratamientoVM
+namespace AnodicaV2DEMO.ViewModels
 {
-    public PerfilTratamiento PerfilTratamiento { get; set; }
-    public IEnumerable<SelectListItem> PerfilesList { get; set; }
-    public IEnumerable<SelectListItem> TratamientosList { get; set; }
-    public IEnumerable<SelectListItem> UbicacionesList { get; set; }
+    public class PerfilTratamientoVM
+    {
+        public PerfilTratamiento PerfilTratamiento { get; set; }
+        public IEnumerable<SelectListItem> PerfilesList { get; set; }
+        public IEnumerable<SelectListItem> TratamientosList { get; set; }
+        public IEnumerable<SelectListItem> UbicacionesList { get; set; }
+    }
 }

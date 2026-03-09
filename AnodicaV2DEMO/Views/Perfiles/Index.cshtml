@@ -1,0 +1,85 @@
+﻿@model IEnumerable<Anodica.Modelos.Perfil>
+
+@{
+    ViewData["Title"] = "Perfiles Industriales";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+
+<div class="row mb-4">
+    <div class="col-6">
+        <h2 class="text-primary fw-bold">Perfiles Industriales</h2>
+    </div>
+    <div class="col-6 text-end">
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            + Nuevo Perfil
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body table-responsive-lg">
+        <table id="tablaPerfiles" class="table table-hover align-middle mb-0 tabla-anodica" style="width:100%">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-3 text-center" data-orderable="false">Foto</th>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Proveedor</th>
+                    <th>Línea</th>
+                   <!-- <th>Ubicación</th>-->
+                    <th class="text-center" data-orderable="false">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-3 text-center">
+                            @if (item.ImagenPerfil != null)
+                            {
+                                var base64 = Convert.ToBase64String(item.ImagenPerfil);
+                                var imgsrc = string.Format("data:image/jpeg;base64,{0}", base64);
+                                <img src="@imgsrc" alt="Foto Perfil" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;" class="shadow-sm border" />
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-secondary border">Sin foto</span>
+                            }
+                        </td>
+                        <td class="fw-bold text-primary">@item.PerfilCodigoAlcemar</td>
+                        <td>@item.Descripcion</td>
+
+                        <td>
+                            @if (item.Linea != null && item.Linea.Proveedor != null)
+                            {
+                                <span class="badge bg-info text-dark">@item.Linea.Proveedor.ProveedorNombre</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+
+                        <td>@(item.Linea != null ? item.Linea.LineaNombre : "-")</td>
+                        <!--<td>@(item.Ubicacion != null ? item.Ubicacion.UbicacionCodigo : "-")</td>-->
+
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-1">
+                                <a asp-action="Edit" asp-route-id="@item.PerfilID" class="btn btn-warning btn-sm" title="Editar">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.PerfilID" method="post" id="form-eliminar-@item.PerfilID">
+                                    @Html.AntiForgeryToken()
+                                    <button type="button" class="btn btn-danger btn-sm" title="Eliminar" onclick="ConfirmarEliminacion('@item.PerfilID', '@item.PerfilCodigoAlcemar')">
+                                        <i class="bi bi-trash"></i> Borrar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

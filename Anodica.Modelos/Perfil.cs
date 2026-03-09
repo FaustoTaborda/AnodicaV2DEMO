@@ -13,7 +13,8 @@ namespace Anodica.Modelos
         [MaxLength(50, ErrorMessage = "El código no puede superar los 50 caracteres.")]
         public string PerfilCodigoAlcemar { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "La línea es obligatoria.")]
+        [Range(1, short.MaxValue, ErrorMessage = "Por favor, seleccione una línea válida.")]
         public short LineaRef { get; set; }
         public short? UbicacionRef { get; set; }
         public byte[]? ImagenPerfil { get; set; }

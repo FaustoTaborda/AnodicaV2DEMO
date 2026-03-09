@@ -13,7 +13,7 @@ namespace Anodica.Modelos
         [MaxLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres.")]
         public string LineaNombre { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "El proveedor es obligatorio.")]
         public int ProveedorRef { get; set; }
 
         public byte? LineaGrupoRef { get; set; }
