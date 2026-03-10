@@ -173,3 +173,45 @@ table {
         font-size: 0.8rem;
     }
 }
+
+/*DarkMode / LightMode */
+body, .card, .navbar, .table, .modal-content, .btn, .form-control, .form-select, .glass-panel {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.4s ease !important;
+}
+
+[data-bs-theme="dark"] .glass-panel {
+    background: rgba(25, 30, 36, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.04);
+}
+
+[data-bs-theme="dark"] table {
+    background: rgba(33, 37, 41, 0.95);
+    color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .card-anodica {
+    background: rgb(25, 60, 90);
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: rgba(33, 37, 41, 0.9) !important;
+}
+
+[data-bs-theme="dark"] .botonIndexCardON {
+    --bs-btn-color: #6a95c2;
+    --bs-btn-border-color: #6a95c2;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-hover-bg: #335272;
+    --bs-btn-hover-border-color: #335272;
+    --bs-btn-active-color: #ffffff;
+    --bs-btn-active-bg: #223c56;
+    --bs-btn-active-border-color: #223c56;
+}
+
+[data-bs-theme="dark"] .botonIndexCardOFF {
+    border-color: #6c757d !important;
+    color: #6c757d !important;
+    background-color: transparent !important;
+    opacity: 0.5 !important;
+}

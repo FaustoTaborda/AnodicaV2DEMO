@@ -126,6 +126,36 @@ namespace Anodica.Web.Controllers
                 ProveedorId = perfilOriginal.Linea?.ProveedorRef
             };
 
+            var tratamientosGuardados = await _unidadTrabajo.PerfilTratamiento
+                .ObtenerTodosAsync(pt => pt.PerfilRef == id.Value);
+            var todosLosTratamientos = await _unidadTrabajo.Tratamiento.ObtenerTodosAsync(isTracking: false);
+            perfilVM.Tratamientos = todosLosTratamientos.Select(t =>
+            {
+                var tratamientoAsignadoBD = tratamientosGuardados.FirstOrDefault(pt => pt.TratamientoRef == t.TratamientoID);
+                if (tratamientoAsignadoBD != null)
+                {
+                    return new PerfilTratamientoFilaVM 
+                    {
+                        TratamientoRef = t.TratamientoID,
+                        TratamientoNombre = t.TratamientoNombre,
+                        EstaSeleccionado = true, 
+                        UbicacionRef = tratamientoAsignadoBD.UbicacionRef ?? 1,
+                        CantMinimaTirasStock = tratamientoAsignadoBD.CantMinimaTirasStock
+                    };
+                }
+                else
+                {
+                    return new PerfilTratamientoFilaVM
+                    {
+                        TratamientoRef = t.TratamientoID,
+                        TratamientoNombre = t.TratamientoNombre,
+                        EstaSeleccionado = false,
+                        UbicacionRef = 1,
+                        CantMinimaTirasStock = 0
+                    };
+                }
+            }).ToList();
+
             await CargarListasDelViewModel(perfilVM);
 
             return View(perfilVM);
@@ -164,7 +194,6 @@ namespace Anodica.Web.Controllers
                 )).FirstOrDefault();
 
                 var archivos = HttpContext.Request.Form.Files;
-
                 if (archivos.Count > 0)
                 {
                     using (var dataStream = new MemoryStream())
@@ -179,15 +208,58 @@ namespace Anodica.Web.Controllers
                 }
 
                 _unidadTrabajo.Perfil.Actualizar(perfilVM.Perfil);
+
+                var tratamientosEnDb = await _unidadTrabajo.PerfilTratamiento
+                    .ObtenerTodosAsync(pt => pt.PerfilRef == perfilVM.Perfil.PerfilID);
+
+                var tratamientosTildados = perfilVM.Tratamientos != null
+                    ? perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList()
+                    : new List<PerfilTratamientoFilaVM>();
+
+
+                var idsTratamientosTildados = tratamientosTildados.Select(t => t.TratamientoRef).ToList();
+                var tratamientosDesmarcado = tratamientosEnDb
+                    .Where(pt => !idsTratamientosTildados.Contains(pt.TratamientoRef)).ToList();
+
+                foreach (var itemAEliminar in tratamientosDesmarcado)
+                {
+                    _unidadTrabajo.PerfilTratamiento.Remover(itemAEliminar);
+                }
+
+                foreach (var itemPantalla in tratamientosTildados)
+                {
+                    var relacionExistente = tratamientosEnDb.FirstOrDefault(pt => pt.TratamientoRef == itemPantalla.TratamientoRef);
+
+                    if (relacionExistente != null)
+                    {
+
+                        relacionExistente.UbicacionRef = itemPantalla.UbicacionRef;
+                        relacionExistente.CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock;
+                        _unidadTrabajo.PerfilTratamiento.Actualizar(relacionExistente);
+                    }
+                    else
+                    {
+                        var nuevoPerfilTratamiento = new PerfilTratamiento
+                        {
+                            PerfilRef = perfilVM.Perfil.PerfilID,
+                            TratamientoRef = itemPantalla.TratamientoRef,
+                            UbicacionRef = itemPantalla.UbicacionRef,
+                            CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock,
+                            CantidadStock = 0 
+                        };
+                        _unidadTrabajo.PerfilTratamiento.Agregar(nuevoPerfilTratamiento);
+                    }
+                }
+
                 await _unidadTrabajo.GuardarAsync();
 
-                TempData["success"] = "Perfil actualizado correctamente.";
+                TempData["success"] = "Perfil y sus tratamientos actualizados correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar perfil ID {Id}", perfilVM.Perfil.PerfilID);
-                ModelState.AddModelError(string.Empty, "No se pudieron guardar los cambios.");
+                ModelState.AddModelError(string.Empty, "No se pudieron guardar los cambios. Verifique su conexión y los datos.");
                 await CargarListasDelViewModel(perfilVM);
                 return View(perfilVM);
             }
@@ -236,10 +308,9 @@ namespace Anodica.Web.Controllers
         }
 
         private async Task CargarListasDelViewModel(PerfilVM vm)
-        { 
+        {
             var lineas = await _unidadTrabajo.Linea.ObtenerTodosAsync();
             var idsProveedoresConLineas = lineas.Select(l => l.ProveedorRef).Distinct().ToList();
-
 
             var proveedoresFiltrados = await _unidadTrabajo.Proveedor.ObtenerTodosAsync(
                 filtro: p => idsProveedoresConLineas.Contains(p.ProveedorID)
@@ -251,25 +322,15 @@ namespace Anodica.Web.Controllers
                 Value = p.ProveedorID.ToString()
             });
 
-            vm.UbicacionesList = (await _unidadTrabajo.Ubicacion.ObtenerTodosAsync()).Select(u => new SelectListItem
-            {
-                Text = u.UbicacionCodigo == u.UbicacionDesc ? u.UbicacionCodigo : $"{u.UbicacionCodigo} - {u.UbicacionDesc}",
-                Value = u.UbicacionID.ToString()
-            });
-
-            if (vm.Tratamientos == null || !vm.Tratamientos.Any())
-            {
-                var todosLosTratamientos = await _unidadTrabajo.Tratamiento.ObtenerTodosAsync(isTracking: false);
-
-                vm.Tratamientos = todosLosTratamientos.Select(t => new PerfilTratamientoFilaVM
+            vm.UbicacionesList = (await _unidadTrabajo.Ubicacion.ObtenerTodosAsync(isTracking: false))
+                .Select(u => new SelectListItem
                 {
-                    TratamientoRef = t.TratamientoID,
-                    TratamientoNombre = t.TratamientoNombre,
-                    EstaSeleccionado = false, 
-                    CantMinimaTirasStock = 0,
-                    UbicacionRef = 1
-                }).ToList(); 
-            }
+                    Text = u.UbicacionDesc?.Trim() ?? "Sin Descripción",
+                    Value = u.UbicacionID.ToString()
+                })
+                .OrderBy(u => u.Value == "1" ? 0 : 1)
+                .ThenBy(u => u.Text)
+                .ToList();
 
             if (vm.ProveedorId.HasValue && vm.ProveedorId.Value > 0)
             {
@@ -283,6 +344,18 @@ namespace Anodica.Web.Controllers
             else
             {
                 vm.LineasList = new List<SelectListItem>();
+            }
+            if (vm.Tratamientos == null || !vm.Tratamientos.Any())
+            {
+                var todosLosTratamientos = await _unidadTrabajo.Tratamiento.ObtenerTodosAsync(isTracking: false);
+                vm.Tratamientos = todosLosTratamientos.Select(t => new PerfilTratamientoFilaVM
+                {
+                    TratamientoRef = t.TratamientoID,
+                    TratamientoNombre = t.TratamientoNombre,
+                    EstaSeleccionado = false,
+                    UbicacionRef = 1,
+                    CantMinimaTirasStock = 0
+                }).ToList();
             }
         }
     }

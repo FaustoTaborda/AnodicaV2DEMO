@@ -6,15 +6,16 @@
 
 <div class="card shadow border-0 mt-4">
     <div class="card-header bg-warning text-dark">
-        <h3 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Editar Perfil: @Model.Perfil.PerfilCodigoAlcemar</h3>
+        <h3 class="card-title mb-0"><i class="bi bi-pencil-square"></i> Editar Perfil Industrial</h3>
     </div>
     <div class="card-body">
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
+
             <input type="hidden" asp-for="Perfil.PerfilID" />
 
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <h5 class="text-warning border-bottom border-warning pb-2 mb-3">Clasificación</h5>
+            <h5 class="text-primary border-bottom pb-2 mb-3">Clasificación</h5>
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label fw-bold">Proveedor</label>
@@ -32,11 +33,11 @@
                 </div>
             </div>
 
-            <h5 class="text-warning border-bottom border-warning pb-2 mb-3 mt-2">Datos del Perfil</h5>
+            <h5 class="text-primary border-bottom pb-2 mb-3 mt-2">Datos del Perfil</h5>
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label asp-for="Perfil.PerfilCodigoAlcemar" class="form-label fw-bold">Código Alcemar</label>
-                    <input asp-for="Perfil.PerfilCodigoAlcemar" class="form-control" />
+                    <label asp-for="Perfil.PerfilCodigoAlcemar" class="form-label fw-bold">Código</label>
+                    <input asp-for="Perfil.PerfilCodigoAlcemar" class="form-control" placeholder="Ej: ALC-1020" />
                     <span asp-validation-for="Perfil.PerfilCodigoAlcemar" class="text-danger"></span>
                 </div>
                 <div class="col-md-8 mb-3">
@@ -64,37 +65,69 @@
                 </div>
             </div>
 
-            <div class="row mt-3 p-3 bg-light rounded border align-items-center">
-                <div class="col-md-2 text-center">
-                    @if (Model.Perfil.ImagenPerfil != null)
-                    {
-                        var base64 = Convert.ToBase64String(Model.Perfil.ImagenPerfil);
-                        var imgsrc = string.Format("data:image/jpeg;base64,{0}", base64);
-                        <img src="@imgsrc" alt="Foto Actual" class="img-thumbnail shadow-sm" style="max-height: 80px;" />
-                    }
-                    else
-                    {
-                        <div class="p-3 text-muted border rounded border-secondary" style="border-style: dashed !important;">
-                            <small>Sin imagen</small>
-                        </div>
-                    }
-                </div>
-                <div class="col-md-7">
-                    <label class="form-label fw-bold">Reemplazar Imagen</label>
-                    <input type="file" name="archivos" id="subidaArchivo" class="form-control" accept="image/png, image/jpeg" />
-                    <small class="text-muted">Si no seleccionás nada, se mantendrá la imagen actual.</small>
-                </div>
-                <div class="col-md-3 text-end pt-3">
-                    <div class="form-check form-switch d-inline-block fs-5 text-start">
-                        <input class="form-check-input" type="checkbox" asp-for="Perfil.ManejaStockPropio">
-                        <label class="form-check-label fs-6 mt-1 ms-2" asp-for="Perfil.ManejaStockPropio">Maneja Stock Propio</label>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Imagen del Perfil</label>
+
+                @if (Model.Perfil.ImagenPerfil != null && Model.Perfil.ImagenPerfil.Length > 0)
+                {
+                    var base64 = Convert.ToBase64String(Model.Perfil.ImagenPerfil);
+                    var imgSrc = String.Format("data:image/jpeg;base64,{0}", base64);
+                    <div class="mb-2">
+                        <img src="@imgSrc" class="img-thumbnail shadow-sm" style="max-height: 120px;" alt="Imagen actual del perfil" />
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="mb-2 text-muted fst-italic">
+                        <i class="bi bi-image"></i> Sin imagen previa
+                    </div>
+                }
+
+                <input type="file" name="archivos" id="subidaArchivo" class="form-control form-control-sm" accept="image/png, image/jpeg" />
+                <small class="text-muted">Dejar en blanco para conservar la imagen actual.</small>
+            </div>
+
+            <h5 class="text-primary border-bottom pb-2 mb-3 mt-4"><i class="bi bi-palette"></i> Ubicación y Stock Mínimo por Tratamiento</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 5%; text-align: center;">Aplica</th>
+                            <th style="width: 25%;">Tratamiento</th>
+                            <th style="width: 40%;">Ubicación Física</th>
+                            <th style="width: 30%;">Stock Mínimo (Tiras)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Tratamientos.Count; i++)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input" type="checkbox" asp-for="Tratamientos[i].EstaSeleccionado" style="transform: scale(1.3);" />
+                                    </div>
+                                    <input type="hidden" asp-for="Tratamientos[i].TratamientoRef" />
+                                    <input type="hidden" asp-for="Tratamientos[i].TratamientoNombre" />
+                                </td>
+                                <td class="fw-bold text-secondary">
+                                    @Model.Tratamientos[i].TratamientoNombre
+                                </td>
+                                <td>
+                                    <select asp-for="Tratamientos[i].UbicacionRef" asp-items="@Model.UbicacionesList" class="form-select form-select-sm">
+                                    </select>
+                                </td>
+                                <td>
+                                    <input asp-for="Tratamientos[i].CantMinimaTirasStock" class="form-control form-control-sm" type="number" min="0" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
 
             <div class="mt-4 border-top pt-3 text-end">
                 <a asp-action="Index" class="btn btn-secondary me-2">Cancelar</a>
-                <button type="submit" class="btn btn-warning fw-bold px-4">Guardar Cambios</button>
+                <button type="submit" class="btn btn-warning px-4">Guardar Cambios</button>
             </div>
         </form>
     </div>
@@ -108,7 +141,6 @@
             $('#comboProveedor').on('change', function () {
                 var proveedorId = $(this).val();
                 var comboLinea = $('#comboLinea');
-
                 comboLinea.empty();
                 comboLinea.append('<option selected disabled>Cargando líneas...</option>');
                 comboLinea.prop('disabled', true);
@@ -121,18 +153,16 @@
                         success: function (data) {
                             comboLinea.empty();
                             comboLinea.append('<option selected disabled value="">-- Seleccione una Línea --</option>');
-
                             $.each(data, function (index, item) {
                                 comboLinea.append($('<option>', {
                                     value: item.value,
                                     text: item.text
                                 }));
                             });
-
                             comboLinea.prop('disabled', false);
                         },
                         error: function () {
-                            alert("Error al cargar las líneas.");
+                            alert("Error al intentar cargar las líneas. Verifique su conexión.");
                         }
                     });
                 }
