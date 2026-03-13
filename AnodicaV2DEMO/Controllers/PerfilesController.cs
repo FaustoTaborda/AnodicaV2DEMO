@@ -70,9 +70,7 @@ namespace Anodica.Web.Controllers
                         perfilVM.Perfil.ImagenPerfil = dataStream.ToArray();
                     }
                 }
-
                 _unidadTrabajo.Perfil.Agregar(perfilVM.Perfil);
-                await _unidadTrabajo.GuardarAsync();
 
                 if (perfilVM.Tratamientos != null && perfilVM.Tratamientos.Any(t => t.EstaSeleccionado))
                 {
@@ -82,7 +80,7 @@ namespace Anodica.Web.Controllers
                     {
                         var nuevoPerfilTratamiento = new PerfilTratamiento
                         {
-                            PerfilRef = perfilVM.Perfil.PerfilID, 
+                            Perfil = perfilVM.Perfil,
                             TratamientoRef = item.TratamientoRef,
                             UbicacionRef = item.UbicacionRef,
                             CantMinimaTirasStock = item.CantMinimaTirasStock,
@@ -92,7 +90,6 @@ namespace Anodica.Web.Controllers
                         _unidadTrabajo.PerfilTratamiento.Agregar(nuevoPerfilTratamiento);
                     }
 
-                    // Guardamos todos los tratamientos de golpe
                     await _unidadTrabajo.GuardarAsync();
                 }
 
