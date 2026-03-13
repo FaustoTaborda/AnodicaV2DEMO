@@ -68,23 +68,25 @@
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-bold">Imagen del Perfil</label>
 
-                @if (Model.Perfil.ImagenPerfil != null && Model.Perfil.ImagenPerfil.Length > 0)
-                {
-                    var base64 = Convert.ToBase64String(Model.Perfil.ImagenPerfil);
-                    var imgSrc = String.Format("data:image/jpeg;base64,{0}", base64);
-                    <div class="mb-2">
-                        <img src="@imgSrc" class="img-thumbnail shadow-sm" style="max-height: 120px;" alt="Imagen actual del perfil" />
-                    </div>
-                }
-                else
-                {
-                    <div class="mb-2 text-muted fst-italic">
-                        <i class="bi bi-image"></i> Sin imagen previa
-                    </div>
-                }
-
-                <input type="file" name="archivos" id="subidaArchivo" class="form-control form-control-sm" accept="image/png, image/jpeg" />
+                <input type="file" name="archivos" id="subidaArchivo" class="form-control form-control-sm mb-1" style="max-width: 340px;" accept="image/png, image/jpeg" />
                 <small class="text-muted">Dejar en blanco para conservar la imagen actual.</small>
+                <div class="mb-2 mt-2" id="contenedorImagen">
+                    @if (Model.Perfil.ImagenPerfil != null && Model.Perfil.ImagenPerfil.Length > 0)
+                    {
+                        var base64 = Convert.ToBase64String(Model.Perfil.ImagenPerfil);
+                        var imgSrc = String.Format("data:image/jpeg;base64,{0}", base64);
+
+                        <div class="border border-secondary rounded bg-white d-flex align-items-center justify-content-center overflow-hidden shadow-sm" style="height: 120px; width: 150px;">
+                            <img id="previewImagen" src="@imgSrc" style="width: 100%; height: 100%; object-fit: contain;" alt="Imagen actual del perfil" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="border border-secondary rounded bg-dark-subtle d-flex align-items-center justify-content-center overflow-hidden shadow-sm" style="height: 120px; width: 150px;">
+                            <img id="previewImagen" src="https://placehold.co/150x120?text=Sin+imagen" style="width: 100%; height: 100%; object-fit: contain;" alt="Nueva imagen" />
+                        </div>
+                    }
+                </div>
             </div>
 
             <h5 class="text-primary border-bottom pb-2 mb-3 mt-4"><i class="bi bi-palette"></i> Ubicación y Stock Mínimo por Tratamiento</h5>
@@ -167,6 +169,23 @@
                     });
                 }
             });
+        });
+
+        document.getElementById("subidaArchivo")?.addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            const imgPreview = document.getElementById("previewImagen");
+            const msgSinImagen = document.getElementById("mensajeSinImagen");
+
+            if (file) {
+                if (this.dataset.lastUrl) URL.revokeObjectURL(this.dataset.lastUrl);
+
+                const url = URL.createObjectURL(file);
+                imgPreview.src = url;
+                imgPreview.classList.remove("d-none");
+                if(msgSinImagen) msgSinImagen.classList.add("d-none");
+
+                this.dataset.lastUrl = url;
+            }
         });
     </script>
 }

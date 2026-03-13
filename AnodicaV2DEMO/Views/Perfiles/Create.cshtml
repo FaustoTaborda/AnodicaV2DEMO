@@ -65,8 +65,19 @@
             <div class="row align-items-center mt-2">
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Imagen del Perfil</label>
-                    <input type="file" name="archivos" id="subidaArchivo" class="form-control" accept="image/png, image/jpeg" />
+
+                    <input type="file" name="archivos" id="subidaArchivo" class="form-control form-control-sm mb-2" style="max-width: 340px;" accept="image/png, image/jpeg" />
+
+                    <label class="form-label text-secondary small d-block mt-2">Vista previa</label>
+                    <div class="border border-secondary rounded bg-dark-subtle d-flex align-items-center justify-content-center overflow-hidden"
+                         style="height: 120px; width: 150px;">
+                        <img id="previewImagen"
+                             src="https://placehold.co/150x120?text=Sin+imagen"
+                             alt="Vista previa"
+                             style="width: 100%; height: 100%; object-fit: contain;" />
+                    </div>
                 </div>
+
                 <div class="col-md-6 mb-3 text-end pt-4">
                     <div class="form-check form-switch d-inline-block fs-5 text-start">
                         <input class="form-check-input" type="checkbox" asp-for="Perfil.ManejaStockPropio" checked>
@@ -131,15 +142,15 @@
                 var comboLinea = $('#comboLinea');
                 comboLinea.empty();
                 comboLinea.append('<option selected disabled>Cargando líneas...</option>');
-                comboLinea.prop('disabled', true); 
-     
+                comboLinea.prop('disabled', true);
+
                 if (proveedorId) {
                     $.ajax({
                         url: '/Perfiles/ObtenerLineasPorProveedor',
                         type: 'GET',
                         data: { proveedorId: proveedorId },
                         success: function (data) {
-                            comboLinea.empty(); 
+                            comboLinea.empty();
                             comboLinea.append('<option selected disabled value="">-- Seleccione una Línea --</option>');
                             $.each(data, function (index, item) {
                                 comboLinea.append($('<option>', {
@@ -155,6 +166,22 @@
                     });
                 }
             });
+
+            $('#subidaArchivo').on('change', function (e) {
+                const file = e.target.files[0];
+                const previewImg = document.getElementById("previewImagen");
+
+                if (file) {
+                    if (this.dataset.lastUrl) URL.revokeObjectURL(this.dataset.lastUrl);
+
+                    const url = URL.createObjectURL(file);
+                    previewImg.src = url;
+                    this.dataset.lastUrl = url;
+                } else {
+                    previewImg.src = "https://placehold.co/150x120?text=Sin+imagen";
+                }
+            });
+
         });
     </script>
 }
