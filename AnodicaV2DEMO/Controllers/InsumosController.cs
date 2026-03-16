@@ -1,7 +1,9 @@
 ﻿using Anodica.AccesoDatos.Repositorio.IRepositorio;
 using Anodica.Modelos;
+using AnodicaV2DEMO.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MapsterMapper; 
 
 namespace Anodica.Controllers
 {
@@ -9,44 +11,51 @@ namespace Anodica.Controllers
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
         private readonly ILogger<InsumosController> _logger;
+        private readonly IMapper _mapper; 
 
-        // Inyectamos la Unidad de Trabajo y el Logger para registrar errores 
-        public InsumosController(IUnidadTrabajo unidadTrabajo, ILogger<InsumosController> logger)
+        public InsumosController(IUnidadTrabajo unidadTrabajo, ILogger<InsumosController> logger, IMapper mapper)
         {
             _unidadTrabajo = unidadTrabajo;
             _logger = logger;
+            _mapper = mapper;
         }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             var lista = await _unidadTrabajo.Insumo.ObtenerTodosAsync();
             return View(lista);
         }
+
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            return View(new InsumoVM());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Insumo insumo)
+        public async Task<IActionResult> Create(InsumoVM insumoVM)
         {
             if (!ModelState.IsValid)
             {
-                return View(insumo);
+                return View(insumoVM);
             }
 
             try
             {
-                var validaInsumoExistente = await _unidadTrabajo.Insumo.ObtenerTodosAsync(i => i.CodigoInsumo == insumo.CodigoInsumo);
+                var validaInsumoExistente = await _unidadTrabajo.Insumo.ObtenerTodosAsync(i => i.CodigoInsumo == insumoVM.CodigoInsumo);
 
                 if (validaInsumoExistente.Any())
                 {
-                    ModelState.AddModelError("CodigoInsumo", $"El código '{insumo.CodigoInsumo}' ya está en uso por otro insumo.");
-                    return View(insumo);
+                    ModelState.AddModelError("CodigoInsumo", $"El código '{insumoVM.CodigoInsumo}' ya está en uso por otro insumo.");
+                    return View(insumoVM);
                 }
-                _unidadTrabajo.Insumo.Agregar(insumo);
+
+                // Conversion VM -> DB
+                Insumo insumoParaBD = _mapper.Map<Insumo>(insumoVM);
+
+                _unidadTrabajo.Insumo.Agregar(insumoParaBD);
                 await _unidadTrabajo.GuardarAsync();
 
                 TempData["success"] = "Insumo creado exitosamente.";
@@ -54,13 +63,13 @@ namespace Anodica.Controllers
             }
             catch (Exception ex)
             {
-                // El error detallado va al archivo de log interno
                 _logger.LogError(ex, "Error crítico al intentar crear el insumo.");
                 ModelState.AddModelError(string.Empty, "Ocurrió un error interno al guardar el insumo. Intente nuevamente.");
-                return View(insumo);
+                return View(insumoVM);
             }
         }
 
+        [HttpGet]
         public async Task<IActionResult> Edit(short? id)
         {
             if (id == null) return NotFound();
@@ -69,28 +78,35 @@ namespace Anodica.Controllers
 
             if (insumo == null) return NotFound();
 
-            return View(insumo);
+            // Conversion de DB -> VM
+            var insumoVM = _mapper.Map<InsumoVM>(insumo);
+
+            return View(insumoVM);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Insumo insumo)
+        public async Task<IActionResult> Edit(InsumoVM insumoVM)
         {
             if (!ModelState.IsValid)
             {
-                return View(insumo);
+                return View(insumoVM);
             }
 
             try
             {
-                var validaInsumoExistente = await _unidadTrabajo.Insumo.ObtenerTodosAsync(i => i.CodigoInsumo == insumo.CodigoInsumo && i.InsumoID != insumo.InsumoID);
+                var validaInsumoExistente = await _unidadTrabajo.Insumo.ObtenerTodosAsync(i => i.CodigoInsumo == insumoVM.CodigoInsumo && i.InsumoID != insumoVM.InsumoID);
                 if (validaInsumoExistente.Any())
                 {
-                    ModelState.AddModelError("CodigoInsumo", $"El código '{insumo.CodigoInsumo}' ya está en uso por otro insumo.");
-                    return View(insumo);
+                    ModelState.AddModelError("CodigoInsumo", $"El código '{insumoVM.CodigoInsumo}' ya está en uso por otro insumo.");
+                    return View(insumoVM);
                 }
 
-                _unidadTrabajo.Insumo.Actualizar(insumo);
+                var insumoDesdeBd = await _unidadTrabajo.Insumo.ObtenerAsync(insumoVM.InsumoID);
+                if (insumoDesdeBd == null) return NotFound();
+                _mapper.Map(insumoVM, insumoDesdeBd);
+
+                _unidadTrabajo.Insumo.Actualizar(insumoDesdeBd);
                 await _unidadTrabajo.GuardarAsync();
 
                 TempData["success"] = "Insumo actualizado exitosamente.";
@@ -98,9 +114,9 @@ namespace Anodica.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar el insumo con ID {Id}", insumo.InsumoID);
+                _logger.LogError(ex, "Error al actualizar el insumo con ID {Id}", insumoVM.InsumoID);
                 ModelState.AddModelError(string.Empty, "No se pudo actualizar el insumo. Verifique los datos e intente nuevamente.");
-                return View(insumo);
+                return View(insumoVM);
             }
         }
 

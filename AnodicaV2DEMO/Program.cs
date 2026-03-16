@@ -1,6 +1,7 @@
 using Anodica.AccesoDatos;
 using Anodica.AccesoDatos.Repositorio;
 using Anodica.AccesoDatos.Repositorio.IRepositorio;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -22,6 +23,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // 3. Inyección de Dependencias (Capa de Acceso a Datos)
 builder.Services.AddScoped<IUnidadTrabajo, UnidadTrabajo>();
+
+builder.Services.AddMapster(); //Registramos Mapster en el contenedor de dependencias 
+
+MapsterConfig.RegisterMappings(); //Le decimos a Mapstr que escanee el proyecto y aplique las reglas de mapeo que definimos en MapsterConfig.cs
 
 var app = builder.Build();
 

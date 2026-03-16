@@ -1,4 +1,4 @@
-﻿@model Anodica.Modelos.Insumo // Usamos el alias corto gracias al @using que pusimos en _ViewImports
+﻿@model AnodicaV2DEMO.ViewModels.InsumoVM
 
 @{
     ViewData["Title"] = "Crear Insumo";
@@ -36,11 +36,6 @@
                             <option value="Lt">Litros</option>
                         </select>
                         <span asp-validation-for="UnidadMedida" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="CantidadStock" class="form-label">Stock Actual</label>
-                        <input asp-for="CantidadStock" class="form-control" min="0" type="number" step="0.01" />
-                        <span asp-validation-for="CantidadStock" class="text-danger"></span>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label asp-for="CantMinimaStock" class="form-label">Stock Mínimo</label>

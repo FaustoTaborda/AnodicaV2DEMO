@@ -1,10 +1,12 @@
 ﻿using Anodica.AccesoDatos.Repositorio.IRepositorio;
 using Anodica.Modelos;
 using AnodicaV2DEMO.ViewModels;
+using MapsterMapper; // ¡Agregado Mapster!
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Anodica.Controllers
@@ -13,12 +15,13 @@ namespace Anodica.Controllers
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
         private readonly ILogger<InsumoMovimientosController> _logger;
+        private readonly IMapper _mapper; 
 
-
-        public InsumoMovimientosController(IUnidadTrabajo unidadTrabajo, ILogger<InsumoMovimientosController> logger)
+        public InsumoMovimientosController(IUnidadTrabajo unidadTrabajo, ILogger<InsumoMovimientosController> logger, IMapper mapper)
         {
             _unidadTrabajo = unidadTrabajo;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -33,7 +36,7 @@ namespace Anodica.Controllers
         {
             InsumoMovimientoVM movimientoVM = new InsumoMovimientoVM()
             {
-                InsumoMovimiento = new InsumoMovimiento(),
+                FechaMovimiento = DateTime.Now,
                 ListaInsumos = await ObtenerListaInsumosParaDropdown()
             };
 
@@ -46,40 +49,40 @@ namespace Anodica.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Los dropdown necesitan ser recargados si el modelo no es válido para que la vista pueda renderizar correctamente
                 movimientoVM.ListaInsumos = await ObtenerListaInsumosParaDropdown();
                 return View(movimientoVM);
             }
 
             try
             {
-                var insumoDb = await _unidadTrabajo.Insumo.ObtenerAsync(movimientoVM.InsumoMovimiento.InsumoRef);
+                var insumoDb = await _unidadTrabajo.Insumo.ObtenerAsync(movimientoVM.InsumoRef);
 
                 if (insumoDb == null)
                 {
                     TempData["error"] = "El insumo seleccionado no existe.";
                     return RedirectToAction(nameof(Index));
                 }
-                if (movimientoVM.InsumoMovimiento.EsIngreso)
+
+                if (movimientoVM.EsIngreso)
                 {
-                    insumoDb.CantidadStock += movimientoVM.InsumoMovimiento.Cantidad;
+                    insumoDb.CantidadStock += movimientoVM.Cantidad;
                 }
                 else
                 {
-                    // Validamos el Stock Mínimo
-                    if (insumoDb.CantidadStock - movimientoVM.InsumoMovimiento.Cantidad < insumoDb.CantMinimaStock)
+                    if (insumoDb.CantidadStock - movimientoVM.Cantidad < insumoDb.CantMinimaStock)
                     {
-                        ModelState.AddModelError("InsumoMovimiento.Cantidad", $"No hay stock suficiente. Stock actual: {insumoDb.CantidadStock}, Mínimo permitido: {insumoDb.CantMinimaStock}");
+                        ModelState.AddModelError("Cantidad", $"No hay stock suficiente. Stock actual: {insumoDb.CantidadStock}, Mínimo permitido: {insumoDb.CantMinimaStock}");
                         movimientoVM.ListaInsumos = await ObtenerListaInsumosParaDropdown();
                         return View(movimientoVM);
                     }
-                    insumoDb.CantidadStock -= movimientoVM.InsumoMovimiento.Cantidad;
+                    insumoDb.CantidadStock -= movimientoVM.Cantidad;
                 }
+                InsumoMovimiento nuevoMovimiento = _mapper.Map<InsumoMovimiento>(movimientoVM);
+                nuevoMovimiento.FechaCreacion = DateTime.Now;
+                nuevoMovimiento.UserAccountRef = Guid.NewGuid();
 
-                movimientoVM.InsumoMovimiento.FechaCreacion = DateTime.Now;
-                // NOTA // Asignamos un Guid vacío momentaneamente
-                movimientoVM.InsumoMovimiento.UserAccountRef = Guid.NewGuid();
-                _unidadTrabajo.InsumoMovimiento.Agregar(movimientoVM.InsumoMovimiento);
+                _unidadTrabajo.InsumoMovimiento.Agregar(nuevoMovimiento);
+                
                 await _unidadTrabajo.GuardarAsync();
 
                 TempData["success"] = "Movimiento registrado y stock actualizado exitosamente.";
@@ -87,7 +90,7 @@ namespace Anodica.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error crítico al registrar el movimiento del Insumo ID: {InsumoRef}", movimientoVM.InsumoMovimiento.InsumoRef);
+                _logger.LogError(ex, "Error crítico al registrar el movimiento del Insumo ID: {InsumoRef}", movimientoVM.InsumoRef);
                 ModelState.AddModelError(string.Empty, "Ocurrió un error interno al guardar el movimiento. Intente nuevamente.");
                 movimientoVM.ListaInsumos = await ObtenerListaInsumosParaDropdown();
                 return View(movimientoVM);
@@ -102,7 +105,7 @@ namespace Anodica.Controllers
             {
                 return Json(new { success = false });
             }
-            //Para que la vista muestre el nombre completo de la unidad de medida en lugar de abreviada
+            
             string nombreUnidad = insumo.UnidadMedida switch
             {
                 "Un" => "Unidades",
@@ -120,7 +123,6 @@ namespace Anodica.Controllers
             });
         }
 
-        // Metodo Auxiliar para cargar el dropdown de Insumos en la vista Create y Edit
         private async Task<IEnumerable<SelectListItem>> ObtenerListaInsumosParaDropdown()
         {
             var insumosDesdeBd = await _unidadTrabajo.Insumo.ObtenerTodosAsync(isTracking: false);

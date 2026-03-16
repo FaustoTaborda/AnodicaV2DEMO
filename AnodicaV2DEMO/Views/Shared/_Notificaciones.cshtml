@@ -5,7 +5,7 @@
             Swal.fire({
                 icon: 'success',
                 title: '¡Operación Exitosa!',
-                text: '@TempData["success"]',
+                text: '@Html.Raw(TempData["success"])',
                 timer: 3000,
                 showConfirmButton: false
             });
@@ -20,7 +20,7 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Atención',
-                text: '@TempData["error"]',
+                text: '@Html.Raw(TempData["error"])',
                 confirmButtonColor: '#d33'
             });
         });

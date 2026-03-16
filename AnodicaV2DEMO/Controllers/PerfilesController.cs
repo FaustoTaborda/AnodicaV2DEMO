@@ -3,6 +3,7 @@ using Anodica.Modelos;
 using AnodicaV2DEMO.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using MapsterMapper;
 
 namespace Anodica.Web.Controllers
 {
@@ -10,11 +11,13 @@ namespace Anodica.Web.Controllers
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
         private readonly ILogger<PerfilesController> _logger;
+        private readonly IMapper _mapper; 
 
-        public PerfilesController(IUnidadTrabajo unidadTrabajo, ILogger<PerfilesController> logger)
+        public PerfilesController(IUnidadTrabajo unidadTrabajo, ILogger<PerfilesController> logger, IMapper mapper)
         {
             _unidadTrabajo = unidadTrabajo;
             _logger = logger;
+            _mapper = mapper; 
         }
 
         [HttpGet]
@@ -27,13 +30,8 @@ namespace Anodica.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            PerfilVM perfilVM = new PerfilVM()
-            {
-                Perfil = new Perfil()
-            };
-
+            PerfilVM perfilVM = new PerfilVM();
             await CargarListasDelViewModel(perfilVM);
-
             return View(perfilVM);
         }
 
@@ -47,30 +45,33 @@ namespace Anodica.Web.Controllers
                 return View(perfilVM);
             }
 
-            perfilVM.Perfil.PerfilCodigoAlcemar = perfilVM.Perfil.PerfilCodigoAlcemar?.Trim();
-            perfilVM.Perfil.Descripcion = perfilVM.Perfil.Descripcion?.Trim();
-            perfilVM.Perfil.PesoXtira = perfilVM.Perfil.PesoXmetro * perfilVM.Perfil.LongTiraMts;
+            perfilVM.PerfilCodigoAlcemar = perfilVM.PerfilCodigoAlcemar?.Trim();
+            perfilVM.Descripcion = perfilVM.Descripcion?.Trim();
 
             try
             {
-                var existeCodigo = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p => p.PerfilCodigoAlcemar == perfilVM.Perfil.PerfilCodigoAlcemar);
+                var existeCodigo = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p => p.PerfilCodigoAlcemar == perfilVM.PerfilCodigoAlcemar);
                 if (existeCodigo.Any())
                 {
-                    ModelState.AddModelError("Perfil.PerfilCodigoAlcemar", "Ya existe un perfil con este código .");
+                    ModelState.AddModelError("PerfilCodigoAlcemar", "Ya existe un perfil con este código.");
                     await CargarListasDelViewModel(perfilVM);
                     return View(perfilVM);
                 }
 
+                Perfil perfilParaBD = _mapper.Map<Perfil>(perfilVM);
+
+                perfilParaBD.PesoXtira = perfilParaBD.PesoXmetro * perfilParaBD.LongTiraMts;
                 var archivos = HttpContext.Request.Form.Files;
                 if (archivos.Count > 0)
                 {
                     using (var dataStream = new MemoryStream())
                     {
                         await archivos[0].CopyToAsync(dataStream);
-                        perfilVM.Perfil.ImagenPerfil = dataStream.ToArray();
+                        perfilParaBD.ImagenPerfil = dataStream.ToArray();
                     }
                 }
-                _unidadTrabajo.Perfil.Agregar(perfilVM.Perfil);
+
+                _unidadTrabajo.Perfil.Agregar(perfilParaBD);
 
                 if (perfilVM.Tratamientos != null && perfilVM.Tratamientos.Any(t => t.EstaSeleccionado))
                 {
@@ -80,20 +81,19 @@ namespace Anodica.Web.Controllers
                     {
                         var nuevoPerfilTratamiento = new PerfilTratamiento
                         {
-                            Perfil = perfilVM.Perfil,
+                            Perfil = perfilParaBD, 
                             TratamientoRef = item.TratamientoRef,
                             UbicacionRef = item.UbicacionRef,
                             CantMinimaTirasStock = item.CantMinimaTirasStock,
-                            CantidadStock = 0 
+                            CantidadStock = 0
                         };
-
                         _unidadTrabajo.PerfilTratamiento.Agregar(nuevoPerfilTratamiento);
                     }
-
-                    await _unidadTrabajo.GuardarAsync();
                 }
 
-                    TempData["success"] = "Perfil industrial creado exitosamente.";
+                await _unidadTrabajo.GuardarAsync();
+
+                TempData["success"] = "Perfil industrial creado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -117,25 +117,22 @@ namespace Anodica.Web.Controllers
 
             if (perfilOriginal == null) return NotFound();
 
-            PerfilVM perfilVM = new PerfilVM()
-            {
-                Perfil = perfilOriginal,
-                ProveedorId = perfilOriginal.Linea?.ProveedorRef
-            };
+            PerfilVM perfilVM = _mapper.Map<PerfilVM>(perfilOriginal);
+            perfilVM.ProveedorId = perfilOriginal.Linea?.ProveedorRef;
 
-            var tratamientosGuardados = await _unidadTrabajo.PerfilTratamiento
-                .ObtenerTodosAsync(pt => pt.PerfilRef == id.Value);
+            var tratamientosGuardados = await _unidadTrabajo.PerfilTratamiento.ObtenerTodosAsync(pt => pt.PerfilRef == id.Value);
             var todosLosTratamientos = await _unidadTrabajo.Tratamiento.ObtenerTodosAsync(isTracking: false);
+
             perfilVM.Tratamientos = todosLosTratamientos.Select(t =>
             {
                 var tratamientoAsignadoBD = tratamientosGuardados.FirstOrDefault(pt => pt.TratamientoRef == t.TratamientoID);
                 if (tratamientoAsignadoBD != null)
                 {
-                    return new PerfilTratamientoFilaVM 
+                    return new PerfilTratamientoFilaVM
                     {
                         TratamientoRef = t.TratamientoID,
                         TratamientoNombre = t.TratamientoNombre,
-                        EstaSeleccionado = true, 
+                        EstaSeleccionado = true,
                         UbicacionRef = tratamientoAsignadoBD.UbicacionRef ?? 1,
                         CantMinimaTirasStock = tratamientoAsignadoBD.CantMinimaTirasStock
                     };
@@ -154,7 +151,6 @@ namespace Anodica.Web.Controllers
             }).ToList();
 
             await CargarListasDelViewModel(perfilVM);
-
             return View(perfilVM);
         }
 
@@ -168,27 +164,31 @@ namespace Anodica.Web.Controllers
                 return View(perfilVM);
             }
 
-            perfilVM.Perfil.PerfilCodigoAlcemar = perfilVM.Perfil.PerfilCodigoAlcemar?.Trim();
-            perfilVM.Perfil.Descripcion = perfilVM.Perfil.Descripcion?.Trim();
-            perfilVM.Perfil.PesoXtira = perfilVM.Perfil.PesoXmetro * perfilVM.Perfil.LongTiraMts;
+            perfilVM.PerfilCodigoAlcemar = perfilVM.PerfilCodigoAlcemar?.Trim();
+            perfilVM.Descripcion = perfilVM.Descripcion?.Trim();
 
             try
             {
                 var existeCodigo = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p =>
-                    p.PerfilCodigoAlcemar == perfilVM.Perfil.PerfilCodigoAlcemar &&
-                    p.PerfilID != perfilVM.Perfil.PerfilID);
+                    p.PerfilCodigoAlcemar == perfilVM.PerfilCodigoAlcemar &&
+                    p.PerfilID != perfilVM.PerfilID);
 
                 if (existeCodigo.Any())
                 {
-                    ModelState.AddModelError("Perfil.PerfilCodigoAlcemar", "El código ya está siendo usado por otro perfil.");
+                    ModelState.AddModelError("PerfilCodigoAlcemar", "El código ya está siendo usado por otro perfil.");
                     await CargarListasDelViewModel(perfilVM);
                     return View(perfilVM);
                 }
-
                 var perfilOriginal = (await _unidadTrabajo.Perfil.ObtenerTodosAsync(
-                    filtro: p => p.PerfilID == perfilVM.Perfil.PerfilID,
+                    filtro: p => p.PerfilID == perfilVM.PerfilID,
                     isTracking: false
                 )).FirstOrDefault();
+
+                if (perfilOriginal == null) return NotFound();
+
+                _mapper.Map(perfilVM, perfilOriginal);
+
+                perfilOriginal.PesoXtira = perfilOriginal.PesoXmetro * perfilOriginal.LongTiraMts;
 
                 var archivos = HttpContext.Request.Form.Files;
                 if (archivos.Count > 0)
@@ -196,27 +196,16 @@ namespace Anodica.Web.Controllers
                     using (var dataStream = new MemoryStream())
                     {
                         await archivos[0].CopyToAsync(dataStream);
-                        perfilVM.Perfil.ImagenPerfil = dataStream.ToArray();
+                        perfilOriginal.ImagenPerfil = dataStream.ToArray(); 
                     }
                 }
-                else
-                {
-                    perfilVM.Perfil.ImagenPerfil = perfilOriginal.ImagenPerfil;
-                }
 
-                _unidadTrabajo.Perfil.Actualizar(perfilVM.Perfil);
+                _unidadTrabajo.Perfil.Actualizar(perfilOriginal);
 
-                var tratamientosEnDb = await _unidadTrabajo.PerfilTratamiento
-                    .ObtenerTodosAsync(pt => pt.PerfilRef == perfilVM.Perfil.PerfilID);
-
-                var tratamientosTildados = perfilVM.Tratamientos != null
-                    ? perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList()
-                    : new List<PerfilTratamientoFilaVM>();
-
-
+                var tratamientosEnDb = await _unidadTrabajo.PerfilTratamiento.ObtenerTodosAsync(pt => pt.PerfilRef == perfilVM.PerfilID);
+                var tratamientosTildados = perfilVM.Tratamientos != null ? perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList() : new List<PerfilTratamientoFilaVM>();
                 var idsTratamientosTildados = tratamientosTildados.Select(t => t.TratamientoRef).ToList();
-                var tratamientosDesmarcado = tratamientosEnDb
-                    .Where(pt => !idsTratamientosTildados.Contains(pt.TratamientoRef)).ToList();
+                var tratamientosDesmarcado = tratamientosEnDb.Where(pt => !idsTratamientosTildados.Contains(pt.TratamientoRef)).ToList();
 
                 foreach (var itemAEliminar in tratamientosDesmarcado)
                 {
@@ -229,7 +218,6 @@ namespace Anodica.Web.Controllers
 
                     if (relacionExistente != null)
                     {
-
                         relacionExistente.UbicacionRef = itemPantalla.UbicacionRef;
                         relacionExistente.CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock;
                         _unidadTrabajo.PerfilTratamiento.Actualizar(relacionExistente);
@@ -238,11 +226,11 @@ namespace Anodica.Web.Controllers
                     {
                         var nuevoPerfilTratamiento = new PerfilTratamiento
                         {
-                            PerfilRef = perfilVM.Perfil.PerfilID,
+                            PerfilRef = perfilVM.PerfilID, 
                             TratamientoRef = itemPantalla.TratamientoRef,
                             UbicacionRef = itemPantalla.UbicacionRef,
                             CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock,
-                            CantidadStock = 0 
+                            CantidadStock = 0
                         };
                         _unidadTrabajo.PerfilTratamiento.Agregar(nuevoPerfilTratamiento);
                     }
@@ -255,7 +243,7 @@ namespace Anodica.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar perfil ID {Id}", perfilVM.Perfil.PerfilID);
+                _logger.LogError(ex, "Error al actualizar perfil ID {Id}", perfilVM.PerfilID);
                 ModelState.AddModelError(string.Empty, "No se pudieron guardar los cambios. Verifique su conexión y los datos.");
                 await CargarListasDelViewModel(perfilVM);
                 return View(perfilVM);
@@ -289,7 +277,6 @@ namespace Anodica.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
         // MÉTODOS AUXILIARES 
 
 
@@ -298,7 +285,8 @@ namespace Anodica.Web.Controllers
         {
             var lineas = await _unidadTrabajo.Linea.ObtenerTodosAsync(l => l.ProveedorRef == proveedorId);
 
-            return Json(lineas.Select(l => new {
+            return Json(lineas.Select(l => new
+            {
                 value = l.LineaID,
                 text = l.LineaNombre
             }));

@@ -14,16 +14,7 @@ namespace Anodica.AccesoDatos.Repositorio
 
         public void Actualizar(Insumo insumo)
         {
-            var objDesdeDb = _db.Insumos.FirstOrDefault(s => s.InsumoID == insumo.InsumoID);
-            if (objDesdeDb != null)
-            {
-                objDesdeDb.InsumoNombre = insumo.InsumoNombre;
-                objDesdeDb.CodigoInsumo = insumo.CodigoInsumo;
-                objDesdeDb.UnidadMedida = insumo.UnidadMedida;
-                objDesdeDb.CantidadStock = insumo.CantidadStock;   
-                objDesdeDb.CantMinimaStock = insumo.CantMinimaStock;
-                
-            }
+            _db.Insumos.Update(insumo);
         }
     }
 }

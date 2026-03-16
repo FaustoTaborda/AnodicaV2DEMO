@@ -4,6 +4,7 @@ using Anodica.Modelos.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using MapsterMapper; 
 
 namespace Anodica.Controllers
 {
@@ -11,11 +12,12 @@ namespace Anodica.Controllers
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
         private readonly ILogger<LineasController> _logger;
-
-        public LineasController(IUnidadTrabajo unidadTrabajo, ILogger<LineasController> logger)
+        private readonly IMapper _mapper; 
+        public LineasController(IUnidadTrabajo unidadTrabajo, ILogger<LineasController> logger, IMapper mapper)
         {
             _unidadTrabajo = unidadTrabajo;
             _logger = logger;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -30,7 +32,6 @@ namespace Anodica.Controllers
         {
             LineaVM lineaVM = new LineaVM()
             {
-                Linea = new Linea(),
                 ProveedoresList = (await _unidadTrabajo.Proveedor.ObtenerTodosAsync()).Select(p => new SelectListItem
                 {
                     Text = p.ProveedorNombre,
@@ -49,16 +50,17 @@ namespace Anodica.Controllers
             {
                 try
                 {
-                    var validaLineaExistente = await _unidadTrabajo.Linea.ObtenerTodosAsync(l => l.LineaNombre.Trim().ToLower() == lineaVM.Linea.LineaNombre.Trim().ToLower());
+                    var validaLineaExistente = await _unidadTrabajo.Linea.ObtenerTodosAsync(l => l.LineaNombre.Trim().ToLower() == lineaVM.LineaNombre.Trim().ToLower());
 
                     if (validaLineaExistente.Any())
                     {
-                        ModelState.AddModelError("Linea.LineaNombre", $"El nombre de línea '{lineaVM.Linea.LineaNombre}' ya existe.");
+                        ModelState.AddModelError("LineaNombre", $"El nombre de línea '{lineaVM.LineaNombre}' ya existe.");
                         lineaVM.ProveedoresList = (await _unidadTrabajo.Proveedor.ObtenerTodosAsync()).Select(p => new SelectListItem { Text = p.ProveedorNombre, Value = p.ProveedorID.ToString() });
                         return View(lineaVM);
                     }
 
-                    _unidadTrabajo.Linea.Agregar(lineaVM.Linea);
+                    Linea nuevaLinea = _mapper.Map<Linea>(lineaVM);
+                    _unidadTrabajo.Linea.Agregar(nuevaLinea);
                     await _unidadTrabajo.GuardarAsync();
 
                     TempData["success"] = "Línea creada exitosamente.";
@@ -80,17 +82,15 @@ namespace Anodica.Controllers
         {
             if (id == null) return NotFound();
 
-            LineaVM lineaVM = new LineaVM()
+            var lineaOriginal = await _unidadTrabajo.Linea.ObtenerAsync(id.Value);
+            if (lineaOriginal == null) return NotFound();
+            LineaVM lineaVM = _mapper.Map<LineaVM>(lineaOriginal);
+            
+            lineaVM.ProveedoresList = (await _unidadTrabajo.Proveedor.ObtenerTodosAsync()).Select(p => new SelectListItem
             {
-                Linea = await _unidadTrabajo.Linea.ObtenerAsync(id.Value),
-                ProveedoresList = (await _unidadTrabajo.Proveedor.ObtenerTodosAsync()).Select(p => new SelectListItem
-                {
-                    Text = p.ProveedorNombre,
-                    Value = p.ProveedorID.ToString()
-                })
-            };
-
-            if (lineaVM.Linea == null) return NotFound();
+                Text = p.ProveedorNombre,
+                Value = p.ProveedorID.ToString()
+            });
 
             return View(lineaVM);
         }
@@ -103,7 +103,21 @@ namespace Anodica.Controllers
             {
                 try
                 {
-                    _unidadTrabajo.Linea.Actualizar(lineaVM.Linea);
+                    var validaLineaExistente = await _unidadTrabajo.Linea.ObtenerTodosAsync(l => 
+                        l.LineaNombre.Trim().ToLower() == lineaVM.LineaNombre.Trim().ToLower() && 
+                        l.LineaID != lineaVM.LineaID);
+
+                    if (validaLineaExistente.Any())
+                    {
+                        ModelState.AddModelError("LineaNombre", $"El nombre de línea '{lineaVM.LineaNombre}' ya está siendo usado.");
+                        lineaVM.ProveedoresList = (await _unidadTrabajo.Proveedor.ObtenerTodosAsync()).Select(p => new SelectListItem { Text = p.ProveedorNombre, Value = p.ProveedorID.ToString() });
+                        return View(lineaVM);
+                    }
+
+                    var lineaDesdeBd = await _unidadTrabajo.Linea.ObtenerAsync(lineaVM.LineaID);
+                    if (lineaDesdeBd == null) return NotFound();
+                    _mapper.Map(lineaVM, lineaDesdeBd);
+                    _unidadTrabajo.Linea.Actualizar(lineaDesdeBd);
                     await _unidadTrabajo.GuardarAsync();
 
                     TempData["success"] = "Línea actualizada exitosamente.";
@@ -111,7 +125,7 @@ namespace Anodica.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error al actualizar la línea con ID {Id}", lineaVM.Linea.LineaID);
+                    _logger.LogError(ex, "Error al actualizar la línea con ID {Id}", lineaVM.LineaID);
                     ModelState.AddModelError(string.Empty, "No se pudo actualizar. Verifique los datos e intente nuevamente.");
                 }
             }
