@@ -46,5 +46,7 @@ namespace Anodica.Modelos
 
         [ForeignKey("UbicacionRef")]
         public Ubicacion Ubicacion { get; set; }
+
+        public ICollection<PerfilTratamiento> PerfilTratamientos { get; set; } = new List<PerfilTratamiento>();
     }
 }

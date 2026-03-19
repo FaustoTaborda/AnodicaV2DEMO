@@ -71,26 +71,24 @@ namespace Anodica.Web.Controllers
                     }
                 }
 
-                _unidadTrabajo.Perfil.Agregar(perfilParaBD);
-
                 if (perfilVM.Tratamientos != null && perfilVM.Tratamientos.Any(t => t.EstaSeleccionado))
                 {
                     var tratamientosActivos = perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList();
 
                     foreach (var item in tratamientosActivos)
                     {
-                        var nuevoPerfilTratamiento = new PerfilTratamiento
+                        perfilParaBD.PerfilTratamientos.Add(new PerfilTratamiento
                         {
-                            Perfil = perfilParaBD, 
+                            Perfil = perfilParaBD,
                             TratamientoRef = item.TratamientoRef,
                             UbicacionRef = item.UbicacionRef,
                             CantMinimaTirasStock = item.CantMinimaTirasStock,
                             CantidadStock = 0
-                        };
-                        _unidadTrabajo.PerfilTratamiento.Agregar(nuevoPerfilTratamiento);
+                        });                 
                     }
                 }
 
+                _unidadTrabajo.Perfil.Agregar(perfilParaBD);
                 await _unidadTrabajo.GuardarAsync();
 
                 TempData["success"] = "Perfil industrial creado exitosamente.";
@@ -112,7 +110,7 @@ namespace Anodica.Web.Controllers
 
             var perfilOriginal = (await _unidadTrabajo.Perfil.ObtenerTodosAsync(
                 filtro: p => p.PerfilID == id.Value,
-                incluirPropiedades: "Linea"
+                incluirPropiedades: "Linea,PerfilTratamientos"
             )).FirstOrDefault();
 
             if (perfilOriginal == null) return NotFound();
@@ -120,7 +118,7 @@ namespace Anodica.Web.Controllers
             PerfilVM perfilVM = _mapper.Map<PerfilVM>(perfilOriginal);
             perfilVM.ProveedorId = perfilOriginal.Linea?.ProveedorRef;
 
-            var tratamientosGuardados = await _unidadTrabajo.PerfilTratamiento.ObtenerTodosAsync(pt => pt.PerfilRef == id.Value);
+            var tratamientosGuardados = perfilOriginal.PerfilTratamientos;
             var todosLosTratamientos = await _unidadTrabajo.Tratamiento.ObtenerTodosAsync(isTracking: false);
 
             perfilVM.Tratamientos = todosLosTratamientos.Select(t =>
@@ -179,9 +177,11 @@ namespace Anodica.Web.Controllers
                     await CargarListasDelViewModel(perfilVM);
                     return View(perfilVM);
                 }
+
                 var perfilOriginal = (await _unidadTrabajo.Perfil.ObtenerTodosAsync(
                     filtro: p => p.PerfilID == perfilVM.PerfilID,
-                    isTracking: false
+                    incluirPropiedades: "PerfilTratamientos",
+                    isTracking: true
                 )).FirstOrDefault();
 
                 if (perfilOriginal == null) return NotFound();
@@ -200,16 +200,15 @@ namespace Anodica.Web.Controllers
                     }
                 }
 
-                _unidadTrabajo.Perfil.Actualizar(perfilOriginal);
 
-                var tratamientosEnDb = await _unidadTrabajo.PerfilTratamiento.ObtenerTodosAsync(pt => pt.PerfilRef == perfilVM.PerfilID);
+                var tratamientosEnDb = perfilOriginal.PerfilTratamientos.ToList();
                 var tratamientosTildados = perfilVM.Tratamientos != null ? perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList() : new List<PerfilTratamientoFilaVM>();
                 var idsTratamientosTildados = tratamientosTildados.Select(t => t.TratamientoRef).ToList();
                 var tratamientosDesmarcado = tratamientosEnDb.Where(pt => !idsTratamientosTildados.Contains(pt.TratamientoRef)).ToList();
 
                 foreach (var itemAEliminar in tratamientosDesmarcado)
                 {
-                    _unidadTrabajo.PerfilTratamiento.Remover(itemAEliminar);
+                    perfilOriginal.PerfilTratamientos.Remove(itemAEliminar);
                 }
 
                 foreach (var itemPantalla in tratamientosTildados)
@@ -220,19 +219,17 @@ namespace Anodica.Web.Controllers
                     {
                         relacionExistente.UbicacionRef = itemPantalla.UbicacionRef;
                         relacionExistente.CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock;
-                        _unidadTrabajo.PerfilTratamiento.Actualizar(relacionExistente);
                     }
                     else
                     {
                         var nuevoPerfilTratamiento = new PerfilTratamiento
                         {
-                            PerfilRef = perfilVM.PerfilID, 
                             TratamientoRef = itemPantalla.TratamientoRef,
                             UbicacionRef = itemPantalla.UbicacionRef,
                             CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock,
                             CantidadStock = 0
                         };
-                        _unidadTrabajo.PerfilTratamiento.Agregar(nuevoPerfilTratamiento);
+                        perfilOriginal.PerfilTratamientos.Add(nuevoPerfilTratamiento);
                     }
                 }
 

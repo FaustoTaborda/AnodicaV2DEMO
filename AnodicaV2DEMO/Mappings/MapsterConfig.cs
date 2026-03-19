@@ -13,7 +13,8 @@ public static class MapsterConfig
 
         TypeAdapterConfig<PerfilVM, Perfil>.NewConfig()
     .Ignore(dest => dest.ImagenPerfil)
-    .Ignore(dest => dest.PesoXtira);   //valor derivado de calculo
+    .Ignore(dest => dest.PesoXtira)   //valor derivado de calculo
+    .Ignore(dest => dest.PerfilTratamientos); 
 
         TypeAdapterConfig<InsumoMovimientoVM, InsumoMovimiento>.NewConfig()
     .Ignore(dest => dest.FechaCreacion)
