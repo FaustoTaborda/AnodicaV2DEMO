@@ -11,13 +11,13 @@ namespace Anodica.Web.Controllers
     {
         private readonly IUnidadTrabajo _unidadTrabajo;
         private readonly ILogger<PerfilesController> _logger;
-        private readonly IMapper _mapper; 
+        private readonly IMapper _mapper;
 
         public PerfilesController(IUnidadTrabajo unidadTrabajo, ILogger<PerfilesController> logger, IMapper mapper)
         {
             _unidadTrabajo = unidadTrabajo;
             _logger = logger;
-            _mapper = mapper; 
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -50,43 +50,12 @@ namespace Anodica.Web.Controllers
 
             try
             {
-                var existeCodigo = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p => p.PerfilCodigoAlcemar == perfilVM.PerfilCodigoAlcemar);
-                if (existeCodigo.Any())
-                {
-                    ModelState.AddModelError("PerfilCodigoAlcemar", "Ya existe un perfil con este código.");
-                    await CargarListasDelViewModel(perfilVM);
-                    return View(perfilVM);
-                }
+                var vistaErrorCE = await ValidaExisteCodigo(perfilVM);
+                if (vistaErrorCE != null) return vistaErrorCE;
 
-                Perfil perfilParaBD = _mapper.Map<Perfil>(perfilVM);
+                Perfil perfilParaBD = new Perfil();
 
-                perfilParaBD.PesoXtira = perfilParaBD.PesoXmetro * perfilParaBD.LongTiraMts;
-                var archivos = HttpContext.Request.Form.Files;
-                if (archivos.Count > 0)
-                {
-                    using (var dataStream = new MemoryStream())
-                    {
-                        await archivos[0].CopyToAsync(dataStream);
-                        perfilParaBD.ImagenPerfil = dataStream.ToArray();
-                    }
-                }
-
-                if (perfilVM.Tratamientos != null && perfilVM.Tratamientos.Any(t => t.EstaSeleccionado))
-                {
-                    var tratamientosActivos = perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList();
-
-                    foreach (var item in tratamientosActivos)
-                    {
-                        perfilParaBD.PerfilTratamientos.Add(new PerfilTratamiento
-                        {
-                            Perfil = perfilParaBD,
-                            TratamientoRef = item.TratamientoRef,
-                            UbicacionRef = item.UbicacionRef,
-                            CantMinimaTirasStock = item.CantMinimaTirasStock,
-                            CantidadStock = 0
-                        });                 
-                    }
-                }
+                await SincronizarPerfilDesdeVM(perfilVM, perfilParaBD, HttpContext.Request.Form.Files);
 
                 _unidadTrabajo.Perfil.Agregar(perfilParaBD);
                 await _unidadTrabajo.GuardarAsync();
@@ -167,16 +136,8 @@ namespace Anodica.Web.Controllers
 
             try
             {
-                var existeCodigo = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p =>
-                    p.PerfilCodigoAlcemar == perfilVM.PerfilCodigoAlcemar &&
-                    p.PerfilID != perfilVM.PerfilID);
-
-                if (existeCodigo.Any())
-                {
-                    ModelState.AddModelError("PerfilCodigoAlcemar", "El código ya está siendo usado por otro perfil.");
-                    await CargarListasDelViewModel(perfilVM);
-                    return View(perfilVM);
-                }
+               var vistaErrorCE = await ValidaExisteCodigo(perfilVM, perfilVM.PerfilID);
+               if(vistaErrorCE !=null) return vistaErrorCE;
 
                 var perfilOriginal = (await _unidadTrabajo.Perfil.ObtenerTodosAsync(
                     filtro: p => p.PerfilID == perfilVM.PerfilID,
@@ -186,52 +147,7 @@ namespace Anodica.Web.Controllers
 
                 if (perfilOriginal == null) return NotFound();
 
-                _mapper.Map(perfilVM, perfilOriginal);
-
-                perfilOriginal.PesoXtira = perfilOriginal.PesoXmetro * perfilOriginal.LongTiraMts;
-
-                var archivos = HttpContext.Request.Form.Files;
-                if (archivos.Count > 0)
-                {
-                    using (var dataStream = new MemoryStream())
-                    {
-                        await archivos[0].CopyToAsync(dataStream);
-                        perfilOriginal.ImagenPerfil = dataStream.ToArray(); 
-                    }
-                }
-
-
-                var tratamientosEnDb = perfilOriginal.PerfilTratamientos.ToList();
-                var tratamientosTildados = perfilVM.Tratamientos != null ? perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList() : new List<PerfilTratamientoFilaVM>();
-                var idsTratamientosTildados = tratamientosTildados.Select(t => t.TratamientoRef).ToList();
-                var tratamientosDesmarcado = tratamientosEnDb.Where(pt => !idsTratamientosTildados.Contains(pt.TratamientoRef)).ToList();
-
-                foreach (var itemAEliminar in tratamientosDesmarcado)
-                {
-                    perfilOriginal.PerfilTratamientos.Remove(itemAEliminar);
-                }
-
-                foreach (var itemPantalla in tratamientosTildados)
-                {
-                    var relacionExistente = tratamientosEnDb.FirstOrDefault(pt => pt.TratamientoRef == itemPantalla.TratamientoRef);
-
-                    if (relacionExistente != null)
-                    {
-                        relacionExistente.UbicacionRef = itemPantalla.UbicacionRef;
-                        relacionExistente.CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock;
-                    }
-                    else
-                    {
-                        var nuevoPerfilTratamiento = new PerfilTratamiento
-                        {
-                            TratamientoRef = itemPantalla.TratamientoRef,
-                            UbicacionRef = itemPantalla.UbicacionRef,
-                            CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock,
-                            CantidadStock = 0
-                        };
-                        perfilOriginal.PerfilTratamientos.Add(nuevoPerfilTratamiento);
-                    }
-                }
+                await SincronizarPerfilDesdeVM (perfilVM, perfilOriginal, HttpContext.Request.Form.Files);
 
                 await _unidadTrabajo.GuardarAsync();
 
@@ -339,6 +255,67 @@ namespace Anodica.Web.Controllers
                     CantMinimaTirasStock = 0
                 }).ToList();
             }
+        }
+
+        private async Task SincronizarPerfilDesdeVM(PerfilVM perfilVM, Perfil perfilBD, IFormFileCollection archivos)
+        {
+            _mapper.Map(perfilVM, perfilBD);
+            //perfilBD.PesoXtira = perfilBD.PesoXmetro * perfilBD.LongTiraMts;
+
+            if (archivos.Count>0)
+            {
+                using (var dataStream = new MemoryStream())
+                {
+                    await archivos[0].CopyToAsync(dataStream);
+                    perfilBD.ImagenPerfil = dataStream.ToArray();
+                }
+            }
+
+            //var tratamientosEnDb = perfilBD.PerfilTratamientos.ToList();
+            //var tratamientosTildados = perfilVM.Tratamientos != null ? perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList() : new List<PerfilTratamientoFilaVM>();
+            //var idsTratamientosTildados = tratamientosTildados.Select(t => t.TratamientoRef).ToList();
+            //var tratamientosDesmarcado = tratamientosEnDb.Where(pt => !idsTratamientosTildados.Contains(pt.TratamientoRef)).ToList();
+
+            //foreach (var itemAEliminar in tratamientosDesmarcado)
+            //{
+            //    {
+            //        perfilBD.PerfilTratamientos.Remove(itemAEliminar);
+            //    }
+            //}
+
+            //foreach (var itemPantalla in tratamientosTildados)
+            //{
+            //    var relacionExistente = tratamientosEnDb.FirstOrDefault(pt => pt.TratamientoRef == itemPantalla.TratamientoRef);
+            //    if (relacionExistente != null)
+            //    {
+            //        relacionExistente.UbicacionRef = itemPantalla.UbicacionRef;
+            //        relacionExistente.CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock;
+            //    }
+            //    else
+            //    {
+            //        var nuevoPerfilTratamiento = new PerfilTratamiento
+            //        {
+            //            TratamientoRef = itemPantalla.TratamientoRef,
+            //            UbicacionRef = itemPantalla.UbicacionRef,
+            //            CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock,
+            //            CantidadStock = 0
+            //        };
+            //        perfilBD.PerfilTratamientos.Add(nuevoPerfilTratamiento);
+            //    }
+            //}
+        }
+
+        private async Task<IActionResult> ValidaExisteCodigo(PerfilVM perfilVM, int idExluido = 0)
+        {
+            var existe = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p => p.PerfilCodigoAlcemar == perfilVM.PerfilCodigoAlcemar && p.PerfilID != idExluido);
+
+            if (existe.Any())
+            {
+                ModelState.AddModelError("PerfilCodigoAlcemar", "El código ya está siendo usado por otro perfil.");
+                await CargarListasDelViewModel(perfilVM);
+                return View(perfilVM);
+            }
+            return null;
         }
     }
 }
