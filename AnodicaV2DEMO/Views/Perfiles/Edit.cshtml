@@ -11,7 +11,7 @@
     <div class="card-body">
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
 
-            <input type="hidden" asp-for="Perfil.PerfilID" />
+            <input type="hidden" asp-for="PerfilID" />
 
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -25,43 +25,43 @@
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <label asp-for="Perfil.LineaRef" class="form-label fw-bold">Línea</label>
-                    <select asp-for="Perfil.LineaRef" asp-items="@Model.LineasList" class="form-select" id="comboLinea">
+                    <label asp-for="LineaRef" class="form-label fw-bold">Línea</label>
+                    <select asp-for="LineaRef" asp-items="@Model.LineasList" class="form-select" id="comboLinea">
                         <option disabled value="">-- Seleccione una Línea --</option>
                     </select>
-                    <span asp-validation-for="Perfil.LineaRef" class="text-danger"></span>
+                    <span asp-validation-for="LineaRef" class="text-danger"></span>
                 </div>
             </div>
 
             <h5 class="text-primary border-bottom pb-2 mb-3 mt-2">Datos del Perfil</h5>
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label asp-for="Perfil.PerfilCodigoAlcemar" class="form-label fw-bold">Código</label>
-                    <input asp-for="Perfil.PerfilCodigoAlcemar" class="form-control" placeholder="Ej: ALC-1020" />
-                    <span asp-validation-for="Perfil.PerfilCodigoAlcemar" class="text-danger"></span>
+                    <label asp-for="PerfilCodigoAlcemar" class="form-label fw-bold">Código</label>
+                    <input asp-for="PerfilCodigoAlcemar" class="form-control" placeholder="Ej: ALC-1020" />
+                    <span asp-validation-for="PerfilCodigoAlcemar" class="text-danger"></span>
                 </div>
                 <div class="col-md-8 mb-3">
-                    <label asp-for="Perfil.Descripcion" class="form-label fw-bold">Descripción</label>
-                    <input asp-for="Perfil.Descripcion" class="form-control" />
-                    <span asp-validation-for="Perfil.Descripcion" class="text-danger"></span>
+                    <label asp-for="Descripcion" class="form-label fw-bold">Descripción</label>
+                    <input asp-for="Descripcion" class="form-control" />
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label asp-for="Perfil.PesoXmetro" class="form-label fw-bold">Peso / Metro (Kg)</label>
-                    <input asp-for="Perfil.PesoXmetro" class="form-control" type="number" step="0.01" min="0" />
-                    <span asp-validation-for="Perfil.PesoXmetro" class="text-danger"></span>
+                    <label asp-for="PesoXmetro" class="form-label fw-bold">Peso / Metro (Kg)</label>
+                    <input asp-for="PesoXmetro" class="form-control" type="number" step="0.01" min="0" />
+                    <span asp-validation-for="PesoXmetro" class="text-danger"></span>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label asp-for="Perfil.LongTiraMts" class="form-label fw-bold">Longitud Tira (Mts)</label>
-                    <input asp-for="Perfil.LongTiraMts" class="form-control" type="number" step="0.01" min="0" />
-                    <span asp-validation-for="Perfil.LongTiraMts" class="text-danger"></span>
+                    <label asp-for="LongTiraMts" class="form-label fw-bold">Longitud Tira (Mts)</label>
+                    <input asp-for="LongTiraMts" class="form-control" type="number" step="0.01" min="0" />
+                    <span asp-validation-for="LongTiraMts" class="text-danger"></span>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label asp-for="Perfil.CantTirasPaquete" class="form-label fw-bold">Tiras / Paquete</label>
-                    <input asp-for="Perfil.CantTirasPaquete" class="form-control" type="number" min="1" />
-                    <span asp-validation-for="Perfil.CantTirasPaquete" class="text-danger"></span>
+                    <label asp-for="CantTirasPaquete" class="form-label fw-bold">Tiras / Paquete</label>
+                    <input asp-for="CantTirasPaquete" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="CantTirasPaquete" class="text-danger"></span>
                 </div>
             </div>
 
@@ -71,9 +71,9 @@
                 <input type="file" name="archivos" id="subidaArchivo" class="form-control form-control-sm mb-1" style="max-width: 340px;" accept="image/png, image/jpeg" />
                 <small class="text-muted">Dejar en blanco para conservar la imagen actual.</small>
                 <div class="mb-2 mt-2" id="contenedorImagen">
-                    @if (Model.Perfil.ImagenPerfil != null && Model.Perfil.ImagenPerfil.Length > 0)
+                    @if (Model.ImagenPerfil != null && Model.ImagenPerfil.Length > 0)
                     {
-                        var base64 = Convert.ToBase64String(Model.Perfil.ImagenPerfil);
+                        var base64 = Convert.ToBase64String(Model.ImagenPerfil);
                         var imgSrc = String.Format("data:image/jpeg;base64,{0}", base64);
 
                         <div class="border border-secondary rounded bg-white d-flex align-items-center justify-content-center overflow-hidden shadow-sm" style="height: 120px; width: 150px;">

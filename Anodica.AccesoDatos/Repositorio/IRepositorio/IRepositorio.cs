@@ -8,7 +8,9 @@ namespace Anodica.AccesoDatos.Repositorio.IRepositorio
 
         Task<IEnumerable<T>> ObtenerTodosAsync(Expression<Func<T, bool>> filtro = null,string incluirPropiedades = null,
         bool isTracking = true);
-        // CUESTION-1: Consultar agregar un parámetro bool isTracking para optimizar las consultas de solo lectura con AsNoTracking().
+    
+        IQueryable<T> ConsultarQuery(Expression<Func<T,bool>> filtro = null, string incluirPropiedades = null);
+
         void Agregar(T entidad);
         void Remover(T entidad);
     }

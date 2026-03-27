@@ -23,8 +23,6 @@ namespace Anodica.AccesoDatos.Repositorio
         bool isTracking = true)
         {
             IQueryable<T> query = dbSet;
-            // CUESTION-1: Investigamos sobre el uso de query.AsNoTracking() acá para que listados como el Index no consuman memoria extra en el servidor. 
-            // Comentado para explicacion mas del uso y de las funciones, en que momentos usarlo y en cuales no.
 
             if (filtro != null)
             {
@@ -43,6 +41,25 @@ namespace Anodica.AccesoDatos.Repositorio
                 query = query.AsNoTracking();
             }
             return await query.ToListAsync();
+        }
+
+        public IQueryable<T> ConsultarQuery(Expression<Func<T, bool>> filtro = null, string incluirPropiedades = null)
+        {
+            IQueryable<T> query = dbSet;
+            query = query.AsNoTracking();
+            if (filtro != null)
+            {
+                query = query.Where(filtro);
+            }
+
+            if (!string.IsNullOrEmpty(incluirPropiedades))
+            {
+                foreach (var inclProp in incluirPropiedades.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(inclProp);
+                }
+            }
+            return query;
         }
         public void Agregar(T entidad)
         {

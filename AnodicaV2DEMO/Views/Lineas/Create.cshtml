@@ -15,25 +15,25 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label asp-for="Linea.LineaNombre" class="form-label">Nombre de la Línea</label>
-                        <input asp-for="Linea.LineaNombre" class="form-control" placeholder="Ej: Línea Herrero" />
-                        <span asp-validation-for="Linea.LineaNombre" class="text-danger"></span>
+                        <label asp-for="LineaNombre" class="form-label">Nombre de la Línea</label>
+                        <input asp-for="LineaNombre" class="form-control" placeholder="Ej: Línea Herrero" />
+                        <span asp-validation-for="LineaNombre" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label asp-for="Linea.ProveedorRef" class="form-label">Proveedor Asociado</label>
-                        <select asp-for="Linea.ProveedorRef" asp-items="@Model.ProveedoresList" class="form-select">
+                        <label asp-for="ProveedorRef" class="form-label">Proveedor Asociado</label>
+                        <select asp-for="ProveedorRef" asp-items="@Model.ProveedoresList" class="form-select">
                             <option disabled selected>-- Seleccione un Proveedor --</option>
                         </select>
-                        <span asp-validation-for="Linea.ProveedorRef" class="text-danger"></span>
+                        <span asp-validation-for="ProveedorRef" class="text-danger"></span>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label asp-for="Linea.LineaGrupoRef" class="form-label">Grupo (Opcional)</label>
-                        <input asp-for="Linea.LineaGrupoRef" class="form-control" type="number" />
-                        <span asp-validation-for="Linea.LineaGrupoRef" class="text-danger"></span>
+                        <label asp-for="LineaGrupoRef" class="form-label">Grupo (Opcional)</label>
+                        <input asp-for="LineaGrupoRef" class="form-control" type="number" />
+                        <span asp-validation-for="LineaGrupoRef" class="text-danger"></span>
                     </div>
                 </div>
 
