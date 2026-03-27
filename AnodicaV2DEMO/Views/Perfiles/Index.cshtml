@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Anodica.Modelos.Perfil>
+﻿@model IEnumerable<AnodicaV2DEMO.ViewModels.PerfilIndexVM>
 
 @{
     ViewData["Title"] = "Perfiles Industriales";
@@ -27,7 +27,6 @@
                     <th>Descripción</th>
                     <th>Proveedor</th>
                     <th>Línea</th>
-                   <!-- <th>Ubicación</th>-->
                     <th class="text-center" data-orderable="false">Acciones</th>
                 </tr>
             </thead>
@@ -51,9 +50,9 @@
                         <td>@item.Descripcion</td>
 
                         <td>
-                            @if (item.Linea != null && item.Linea.Proveedor != null)
+                            @if (!string.IsNullOrEmpty(item.LineaProveedorProveedorNombre))
                             {
-                                <span class="badge bg-info text-dark">@item.Linea.Proveedor.ProveedorNombre</span>
+                                <span class="badge bg-info text-dark">@item.LineaProveedorProveedorNombre</span>
                             }
                             else
                             {
@@ -61,7 +60,7 @@
                             }
                         </td>
 
-                        <td>@(item.Linea != null ? item.Linea.LineaNombre : "-")</td>
+                        <td>@(string.IsNullOrEmpty(item.LineaLineaNombre) ? "-" : item.LineaLineaNombre)</td>
 
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-1">

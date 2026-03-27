@@ -1,9 +1,11 @@
 ﻿using Anodica.AccesoDatos.Repositorio.IRepositorio;
 using Anodica.Modelos;
 using AnodicaV2DEMO.ViewModels;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace Anodica.Web.Controllers
 {
@@ -23,10 +25,11 @@ namespace Anodica.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var perfiles = await _unidadTrabajo.Perfil.ObtenerTodosAsync(incluirPropiedades: "Linea,Linea.Proveedor,Ubicacion");
+            var queryBorrador = _unidadTrabajo.Perfil.ConsultarQuery();
+            var perfiles = await queryBorrador.ProjectToType<PerfilIndexVM>().ToListAsync(); 
+
             return View(perfiles);
         }
-
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -260,7 +263,6 @@ namespace Anodica.Web.Controllers
         private async Task SincronizarPerfilDesdeVM(PerfilVM perfilVM, Perfil perfilBD, IFormFileCollection archivos)
         {
             _mapper.Map(perfilVM, perfilBD);
-            //perfilBD.PesoXtira = perfilBD.PesoXmetro * perfilBD.LongTiraMts;
 
             if (archivos.Count>0)
             {
@@ -270,46 +272,15 @@ namespace Anodica.Web.Controllers
                     perfilBD.ImagenPerfil = dataStream.ToArray();
                 }
             }
-
-            //var tratamientosEnDb = perfilBD.PerfilTratamientos.ToList();
-            //var tratamientosTildados = perfilVM.Tratamientos != null ? perfilVM.Tratamientos.Where(t => t.EstaSeleccionado).ToList() : new List<PerfilTratamientoFilaVM>();
-            //var idsTratamientosTildados = tratamientosTildados.Select(t => t.TratamientoRef).ToList();
-            //var tratamientosDesmarcado = tratamientosEnDb.Where(pt => !idsTratamientosTildados.Contains(pt.TratamientoRef)).ToList();
-
-            //foreach (var itemAEliminar in tratamientosDesmarcado)
-            //{
-            //    {
-            //        perfilBD.PerfilTratamientos.Remove(itemAEliminar);
-            //    }
-            //}
-
-            //foreach (var itemPantalla in tratamientosTildados)
-            //{
-            //    var relacionExistente = tratamientosEnDb.FirstOrDefault(pt => pt.TratamientoRef == itemPantalla.TratamientoRef);
-            //    if (relacionExistente != null)
-            //    {
-            //        relacionExistente.UbicacionRef = itemPantalla.UbicacionRef;
-            //        relacionExistente.CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock;
-            //    }
-            //    else
-            //    {
-            //        var nuevoPerfilTratamiento = new PerfilTratamiento
-            //        {
-            //            TratamientoRef = itemPantalla.TratamientoRef,
-            //            UbicacionRef = itemPantalla.UbicacionRef,
-            //            CantMinimaTirasStock = itemPantalla.CantMinimaTirasStock,
-            //            CantidadStock = 0
-            //        };
-            //        perfilBD.PerfilTratamientos.Add(nuevoPerfilTratamiento);
-            //    }
-            //}
         }
 
-        private async Task<IActionResult> ValidaExisteCodigo(PerfilVM perfilVM, int idExluido = 0)
+        private async Task<IActionResult> ValidaExisteCodigo(PerfilVM perfilVM, int idExcluido = 0)
         {
-            var existe = await _unidadTrabajo.Perfil.ObtenerTodosAsync(p => p.PerfilCodigoAlcemar == perfilVM.PerfilCodigoAlcemar && p.PerfilID != idExluido);
+            var existe = _unidadTrabajo.Perfil.ConsultarQuery(p =>
+        p.PerfilCodigoAlcemar == perfilVM.PerfilCodigoAlcemar &&
+        p.PerfilID != idExcluido);
 
-            if (existe.Any())
+            if (await existe.AnyAsync())
             {
                 ModelState.AddModelError("PerfilCodigoAlcemar", "El código ya está siendo usado por otro perfil.");
                 await CargarListasDelViewModel(perfilVM);
